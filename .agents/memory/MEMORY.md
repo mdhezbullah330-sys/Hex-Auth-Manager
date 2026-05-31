@@ -1,0 +1,1 @@
+- [HexAuth architecture](hexauth-architecture.md) — full-stack SaaS auth platform; Express backend, React+Vite frontend, PostgreSQL/Drizzle DB; key conventions and gotchas.
