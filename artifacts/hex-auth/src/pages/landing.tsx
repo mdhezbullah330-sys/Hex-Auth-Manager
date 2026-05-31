@@ -7,12 +7,21 @@ import { Button } from "@/components/ui/button";
 import { useThreeCanvas } from "@/hooks/use-three-canvas";
 import {
   Terminal, Shield, Zap, Lock, Database, Code2, Layers, Key,
-  ArrowRight, Globe, Cpu, Server, FileCode, ChevronRight
+  ArrowRight, Globe, Cpu, Server, FileCode, ChevronRight, Download
 } from "lucide-react";
 import logoImg from "@assets/hexauth_1780209078520.jpg";
 
 const SDK_TABS = ["Python", "C#", "C++", "Java", "Node.js", "PHP"] as const;
 type SdkTab = typeof SDK_TABS[number];
+
+const SDK_DOWNLOAD_KEY: Record<SdkTab, string> = {
+  "Python":  "python",
+  "C#":      "csharp",
+  "C++":     "cpp",
+  "Java":    "java",
+  "Node.js": "nodejs",
+  "PHP":     "php",
+};
 
 const SDK_CODE: Record<SdkTab, { file: string; code: string }> = {
   Python: {
@@ -496,7 +505,18 @@ export default function LandingPage() {
                     <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
                     <div className="w-3 h-3 rounded-full bg-green-500/70" />
                     <span className="ml-4 text-xs font-mono text-white/40">{SDK_CODE[activeTab].file}</span>
-                    <div className="ml-auto flex items-center gap-1 text-xs font-mono text-white/30">{activeTab}</div>
+                    <div className="ml-auto flex items-center gap-2">
+                      <span className="text-xs font-mono text-white/30">{activeTab}</span>
+                      <a
+                        href={`/api/downloads/sdk/${SDK_DOWNLOAD_KEY[activeTab]}`}
+                        download
+                        className="flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-primary/20 hover:bg-primary/40 text-primary border border-primary/30 transition-all"
+                        title={`Download ${SDK_CODE[activeTab].file}`}
+                      >
+                        <Download className="w-3 h-3" />
+                        Download
+                      </a>
+                    </div>
                   </div>
                   <div className="p-6 overflow-x-auto max-h-96 overflow-y-auto custom-scrollbar">
                     <pre className="text-sm font-mono leading-relaxed">
