@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useVerifyEmail } from "@workspace/api-client-react";
 import { Logo } from "@/components/logo";
@@ -14,37 +14,21 @@ export default function VerifyEmailPage() {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [devCode, setDevCode] = useState<string | null>(null);
-  const [devMode, setDevMode] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resending, setResending] = useState(false);
 
   const verifyMutation = useVerifyEmail();
-
-  const fetchDevCode = useCallback((emailVal: string) => {
-    fetch(`${BASE}/api/auth/dev-code?email=${encodeURIComponent(emailVal)}`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
-        if (data && !data.verified && data.code) {
-          setDevCode(data.code);
-          setDevMode(true);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const emailParam = params.get("email");
     if (emailParam) {
       setEmail(emailParam);
-      fetchDevCode(emailParam);
     } else {
       setLocation("/login");
     }
-  }, [setLocation, fetchDevCode]);
+  }, [setLocation]);
 
-  // Countdown timer
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
@@ -85,8 +69,6 @@ export default function VerifyEmailPage() {
         toast({ title: "Code resent", description: "Check your email for the new code." });
         setResendCooldown(30);
         setCode("");
-        // Refresh dev code if in dev mode
-        setTimeout(() => fetchDevCode(email), 500);
       } else {
         toast({ variant: "destructive", title: "Failed to resend", description: data.error || "Try again." });
       }
@@ -106,40 +88,11 @@ export default function VerifyEmailPage() {
           <Logo size="lg" />
         </div>
 
-        {/* Dev mode banner */}
-        {devMode && devCode && (
-          <div className="mb-4 rounded-xl border border-yellow-500/40 bg-yellow-500/10 p-4">
-            <div className="flex items-start gap-3">
-              <span className="text-yellow-400 text-lg">⚠️</span>
-              <div className="w-full">
-                <p className="text-yellow-300 text-sm font-semibold mb-1">Development Mode — SMTP not configured</p>
-                <p className="text-yellow-200/70 text-xs mb-3">
-                  Email was not sent. Your verification code is shown below.
-                </p>
-                <button
-                  onClick={() => setCode(devCode)}
-                  className="flex items-center gap-3 w-full bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/40 rounded-lg px-4 py-3 transition-all group"
-                >
-                  <span className="font-mono text-2xl font-bold tracking-[0.3em] text-yellow-300">
-                    {devCode}
-                  </span>
-                  <span className="ml-auto text-xs text-yellow-400/70 group-hover:text-yellow-300 transition-colors">
-                    click to fill →
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         <Card className="border-border bg-card/80 backdrop-blur-sm shadow-2xl">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold tracking-tight">Verify Email</CardTitle>
             <CardDescription className="text-muted-foreground">
-              {devMode
-                ? "Click the code above to auto-fill, or type it manually"
-                : <>We sent a 6-digit code to <span className="font-semibold text-foreground">{email}</span></>
-              }
+              We sent a 6-digit code to <span className="font-semibold text-foreground">{email}</span>
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6">
@@ -175,7 +128,7 @@ export default function VerifyEmailPage() {
                 : "Resend code"}
             </button>
             <p className="text-sm text-muted-foreground">
-              Didn't receive a code?{" "}
+              Wrong email?{" "}
               <Link href="/login">
                 <span className="text-primary hover:underline font-medium cursor-pointer">Return to login</span>
               </Link>
