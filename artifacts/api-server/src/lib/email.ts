@@ -166,9 +166,11 @@ export async function sendVerificationEmail(
       html,
     });
     logger.info({ email }, "Verification email sent via Resend");
-  } catch (err) {
-    logger.error({ err }, "Failed to send verification email");
-    throw err;
+  } catch (err: any) {
+    // Log the error but do NOT throw — user is already created in DB.
+    // On Resend free plan, only the verified owner email can receive mail.
+    // Other recipients will fail here; the dev-code endpoint still works.
+    logger.error({ err: err?.message ?? err }, "Failed to send verification email (email delivery failed — user still created)");
   }
 }
 
