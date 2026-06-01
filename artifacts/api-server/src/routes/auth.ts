@@ -199,6 +199,39 @@ router.post("/auth/logout", (_req, res): void => {
   res.json({ ok: true, message: "Logged out" });
 });
 
+// Dev-only endpoint: returns verification code from DB when SMTP is not configured.
+// Never exposed when SMTP_USER is set (production mode).
+router.get("/auth/dev-code", async (req, res): Promise<void> => {
+  if (process.env.SMTP_USER) {
+    res.status(404).json({ error: "Not available" });
+    return;
+  }
+
+  const email = req.query.email as string;
+  if (!email) {
+    res.status(400).json({ error: "email query param required" });
+    return;
+  }
+
+  const [user] = await db
+    .select({ code: usersTable.emailVerifyCode, verified: usersTable.emailVerified })
+    .from(usersTable)
+    .where(eq(usersTable.email, email))
+    .limit(1);
+
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  if (user.verified) {
+    res.json({ verified: true, code: null });
+    return;
+  }
+
+  res.json({ verified: false, code: user.code });
+});
+
 router.get("/auth/me", requireAuth, async (req: AuthRequest, res): Promise<void> => {
   const [user] = await db
     .select()
