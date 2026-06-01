@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.SESSION_SECRET || "hex-auth-secret";
 
 export interface AuthRequest extends Request {
-  userId?: number;
+  userId?: string;
   userRole?: string;
 }
 
@@ -17,7 +17,7 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
 
   const token = authHeader.slice(7);
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: number; role: string };
+    const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
     req.userId = payload.userId;
     req.userRole = payload.role;
     next();
@@ -26,6 +26,6 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
   }
 }
 
-export function generateToken(userId: number, role: string): string {
+export function generateToken(userId: string, role: string): string {
   return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "7d" });
 }
