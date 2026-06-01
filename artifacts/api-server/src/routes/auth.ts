@@ -83,8 +83,27 @@ router.post("/auth/login", async (req, res): Promise<void> => {
 
 router.post("/auth/logout", (_req, res): void => { res.json({ ok: true, message: "Logged out" }); });
 
+router.post("/auth/resend-code", async (req, res): Promise<void> => {
+  const { email } = req.body;
+  if (!email) { res.status(400).json({ error: "email required" }); return; }
+  try {
+    const user = await User.findOne({ email });
+    if (!user) { res.status(404).json({ error: "User not found" }); return; }
+    if (user.emailVerified) { res.status(400).json({ error: "Email already verified" }); return; }
+    const code = generateCode();
+    const expiry = new Date(Date.now() + 15 * 60 * 1000);
+    user.emailVerifyCode = code; user.emailVerifyExpiry = expiry;
+    await user.save();
+    await sendVerificationEmail(email, code, user.username);
+    res.json({ ok: true, message: "Verification code resent" });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: `Failed to resend: ${message}` });
+  }
+});
+
 router.get("/auth/dev-code", async (req, res): Promise<void> => {
-  if (process.env.SMTP_USER) { res.status(404).json({ error: "Not available" }); return; }
+  if (process.env.SMTP_PASS) { res.status(404).json({ error: "Not available" }); return; }
   const email = req.query.email as string;
   if (!email) { res.status(400).json({ error: "email query param required" }); return; }
   const user = await User.findOne({ email }).select("emailVerifyCode emailVerified");
