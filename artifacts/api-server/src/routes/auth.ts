@@ -103,7 +103,7 @@ router.post("/auth/resend-code", async (req, res): Promise<void> => {
 });
 
 router.get("/auth/dev-code", async (req, res): Promise<void> => {
-  if (process.env.SMTP_PASS) { res.status(404).json({ error: "Not available" }); return; }
+  if (process.env.NODE_ENV === "production") { res.status(404).json({ error: "Not available" }); return; }
   const email = req.query.email as string;
   if (!email) { res.status(400).json({ error: "email query param required" }); return; }
   const user = await User.findOne({ email }).select("emailVerifyCode emailVerified");
