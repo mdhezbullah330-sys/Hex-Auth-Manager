@@ -47,7 +47,8 @@ export default function LoginPage() {
           }
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Login failed", description: err.error || "An error occurred." });
+          const msg = err?.data?.error || err?.message || "An error occurred.";
+          toast({ variant: "destructive", title: "Login failed", description: msg });
         }
       }
     );

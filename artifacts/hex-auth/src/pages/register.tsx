@@ -48,7 +48,14 @@ export default function RegisterPage() {
           }
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Registration failed", description: err.error || "An error occurred." });
+          const msg = err?.data?.error || err?.message || "An error occurred.";
+          const isUnverified = err?.data?.code === "UNVERIFIED";
+          if (isUnverified) {
+            toast({ variant: "destructive", title: "Already registered", description: msg,
+              action: { label: "Verify now", onClick: () => setLocation(`/verify-email?email=${encodeURIComponent(err.data.email)}`) } as any });
+          } else {
+            toast({ variant: "destructive", title: "Registration failed", description: msg });
+          }
         }
       }
     );

@@ -22,7 +22,13 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   try {
     const existing = await User.findOne({ $or: [{ email }, { username }] });
     if (existing) {
-      res.status(400).json({ error: "Username or email already exists" });
+      if (existing.email === email && !existing.emailVerified) {
+        res.status(400).json({ error: "This email is already registered but not verified. Please check your inbox or resend the code.", code: "UNVERIFIED", email });
+      } else if (existing.email === email) {
+        res.status(400).json({ error: "This email is already registered. Please sign in.", code: "EMAIL_EXISTS" });
+      } else {
+        res.status(400).json({ error: "This username is already taken. Please choose another.", code: "USERNAME_EXISTS" });
+      }
       return;
     }
     const passwordHash = await bcrypt.hash(password, 10);
