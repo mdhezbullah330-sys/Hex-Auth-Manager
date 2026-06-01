@@ -3,12 +3,12 @@ import { logger } from "./logger";
 
 function createTransporter() {
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.resend.com",
-    port: parseInt(process.env.SMTP_PORT || "465"),
-    secure: (process.env.SMTP_PORT || "465") === "465",
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT ?? "465"),
+    secure: (process.env.SMTP_PORT ?? "465") === "465",
     auth: {
-      user: process.env.SMTP_USER || "resend",
-      pass: process.env.SMTP_PASS || "",
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     },
   });
 }
@@ -18,7 +18,7 @@ export async function sendVerificationEmail(
   code: string,
   username: string = "there"
 ): Promise<void> {
-  const from = process.env.SMTP_FROM || "Hex Auth <onboarding@resend.dev>";
+  const from = process.env.SMTP_FROM!;
 
   if (!process.env.SMTP_PASS) {
     logger.info({ email, code }, "Email verification code (SMTP not configured)");
@@ -180,7 +180,7 @@ export async function sendTeamInviteEmail(
   role: string,
   acceptLink: string
 ): Promise<void> {
-  const from = process.env.SMTP_FROM || "Hex Auth <onboarding@resend.dev>";
+  const from = process.env.SMTP_FROM!;
 
   if (!process.env.SMTP_PASS) {
     logger.info({ email, acceptLink }, "Team invite email (SMTP not configured)");
