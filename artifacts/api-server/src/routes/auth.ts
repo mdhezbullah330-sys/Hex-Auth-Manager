@@ -26,58 +26,63 @@ router.post("/auth/register", async (req, res): Promise<void> => {
 
   const { username, email, password } = parsed.data;
 
-  const existing = await db
-    .select()
-    .from(usersTable)
-    .where(or(eq(usersTable.email, email), eq(usersTable.username, username)))
-    .limit(1);
+  try {
+    const existing = await db
+      .select()
+      .from(usersTable)
+      .where(or(eq(usersTable.email, email), eq(usersTable.username, username)))
+      .limit(1);
 
-  if (existing.length > 0) {
-    res.status(400).json({ error: "Username or email already exists" });
-    return;
+    if (existing.length > 0) {
+      res.status(400).json({ error: "Username or email already exists" });
+      return;
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const code = generateCode();
+    const expiry = new Date(Date.now() + 15 * 60 * 1000);
+
+    const appId = uuidv4();
+    const appSecret = uuidv4().replace(/-/g, "");
+
+    const [user] = await db
+      .insert(usersTable)
+      .values({
+        username,
+        email,
+        passwordHash,
+        emailVerifyCode: code,
+        emailVerifyExpiry: expiry,
+        appId,
+        appSecret,
+        plan: "free",
+        status: "active",
+        role: "owner",
+        emailVerified: false,
+      })
+      .returning();
+
+    await sendVerificationEmail(email, code, username);
+
+    res.status(201).json({
+      ok: true,
+      requiresVerification: true,
+      message: "Verification code sent to your email",
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        plan: user.plan,
+        status: user.status,
+        role: user.role,
+        emailVerified: user.emailVerified,
+        createdAt: user.createdAt.toISOString(),
+      },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    res.status(500).json({ error: `Registration failed: ${message}` });
   }
-
-  const passwordHash = await bcrypt.hash(password, 10);
-  const code = generateCode();
-  const expiry = new Date(Date.now() + 15 * 60 * 1000);
-
-  const appId = uuidv4();
-  const appSecret = uuidv4().replace(/-/g, "");
-
-  const [user] = await db
-    .insert(usersTable)
-    .values({
-      username,
-      email,
-      passwordHash,
-      emailVerifyCode: code,
-      emailVerifyExpiry: expiry,
-      appId,
-      appSecret,
-      plan: "free",
-      status: "active",
-      role: "owner",
-      emailVerified: false,
-    })
-    .returning();
-
-  await sendVerificationEmail(email, code, username);
-
-  res.status(201).json({
-    ok: true,
-    requiresVerification: true,
-    message: "Verification code sent to your email",
-    user: {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      plan: user.plan,
-      status: user.status,
-      role: user.role,
-      emailVerified: user.emailVerified,
-      createdAt: user.createdAt.toISOString(),
-    },
-  });
 });
 
 router.post("/auth/verify-email", async (req, res): Promise<void> => {
