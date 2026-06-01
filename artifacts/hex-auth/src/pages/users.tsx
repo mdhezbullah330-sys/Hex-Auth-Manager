@@ -31,9 +31,9 @@ export default function UsersPage() {
     banMutation.mutate({ id }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetUsersQueryKey() });
-        toast({ title: "User banned" });
+        toast({ variant: "success", title: "User banned" });
       },
-      onError: (err: any) => toast({ variant: "destructive", title: "Action failed", description: err.error })
+      onError: (err: any) => toast({ variant: "destructive", title: "Action failed", description: err?.data?.error || err?.message })
     });
   };
 
@@ -41,9 +41,9 @@ export default function UsersPage() {
     unbanMutation.mutate({ id }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetUsersQueryKey() });
-        toast({ title: "User unbanned" });
+        toast({ variant: "success", title: "User unbanned" });
       },
-      onError: (err: any) => toast({ variant: "destructive", title: "Action failed", description: err.error })
+      onError: (err: any) => toast({ variant: "destructive", title: "Action failed", description: err?.data?.error || err?.message })
     });
   };
 
@@ -51,9 +51,9 @@ export default function UsersPage() {
     resetHwidMutation.mutate({ id }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetUsersQueryKey() });
-        toast({ title: "HWID reset successfully" });
+        toast({ variant: "success", title: "HWID reset successfully" });
       },
-      onError: (err: any) => toast({ variant: "destructive", title: "Action failed", description: err.error })
+      onError: (err: any) => toast({ variant: "destructive", title: "Action failed", description: err?.data?.error || err?.message })
     });
   };
 

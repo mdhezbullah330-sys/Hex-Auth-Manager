@@ -25,10 +25,10 @@ export default function SessionsPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetSessionsQueryKey() });
-          toast({ title: "Session terminated" });
+          toast({ variant: "success", title: "Session terminated" });
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Failed to terminate", description: err.error });
+          toast({ variant: "destructive", title: "Failed to terminate", description: err?.data?.error || err?.message });
         }
       }
     );

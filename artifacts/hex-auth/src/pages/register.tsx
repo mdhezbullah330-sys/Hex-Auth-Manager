@@ -41,7 +41,7 @@ export default function RegisterPage() {
       {
         onSuccess: (res) => {
           if (res.ok) {
-            toast({ title: "Account created", description: "Please verify your email address to continue." });
+            toast({ variant: "success", title: "Account created", description: "Please verify your email address to continue." });
             setLocation(`/verify-email?email=${encodeURIComponent(data.email)}`);
           } else {
             toast({ variant: "destructive", title: "Registration failed", description: res.message || "Could not create account." });

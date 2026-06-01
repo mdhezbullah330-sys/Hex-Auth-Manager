@@ -42,14 +42,14 @@ export default function VerifyEmailPage() {
       {
         onSuccess: (res) => {
           if (res.ok) {
-            toast({ title: "Email verified", description: "Your account is now active. Please sign in." });
+            toast({ variant: "success", title: "Email verified", description: "Your account is now active. Please sign in." });
             setLocation("/login");
           } else {
             toast({ variant: "destructive", title: "Verification failed", description: res.message || "Invalid code." });
           }
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Verification failed", description: err.error || "An error occurred." });
+          toast({ variant: "destructive", title: "Verification failed", description: err?.data?.error || err?.message || "An error occurred." });
         },
       }
     );
@@ -66,7 +66,7 @@ export default function VerifyEmailPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        toast({ title: "Code resent", description: "Check your email for the new code." });
+        toast({ variant: "success", title: "Code resent", description: "Check your email for the new code." });
         setResendCooldown(30);
         setCode("");
       } else {

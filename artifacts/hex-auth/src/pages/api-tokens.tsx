@@ -23,7 +23,7 @@ export default function ApiTokensPage() {
     navigator.clipboard.writeText(text);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
-    toast({ title: "Copied to clipboard", description: "The value has been copied to your clipboard." });
+    toast({ variant: "success", title: "Copied to clipboard", description: "The value has been copied to your clipboard." });
   };
 
   return (
@@ -116,7 +116,7 @@ export default function ApiTokensPage() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => toast({ title: "Feature coming soon", description: "Rotation is available in the API but needs wiring here." })} className="bg-destructive hover:bg-destructive/90">Rotate Secret</AlertDialogAction>
+                <AlertDialogAction onClick={() => toast({ variant: "success", title: "Feature coming soon", description: "Rotation is available in the API but needs wiring here." })} className="bg-destructive hover:bg-destructive/90">Rotate Secret</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

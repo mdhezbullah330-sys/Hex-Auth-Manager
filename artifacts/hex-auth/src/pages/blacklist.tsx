@@ -37,13 +37,13 @@ export default function BlacklistPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetBlacklistQueryKey() });
-          toast({ title: "Entry added to blacklist" });
+          toast({ variant: "success", title: "Entry added to blacklist" });
           setIsAddOpen(false);
           setValue("");
           setReason("");
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Failed to add", description: err.error });
+          toast({ variant: "destructive", title: "Failed to add", description: err?.data?.error || err?.message });
         }
       }
     );
@@ -55,10 +55,10 @@ export default function BlacklistPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetBlacklistQueryKey() });
-          toast({ title: "Entry removed from blacklist" });
+          toast({ variant: "success", title: "Entry removed from blacklist" });
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Failed to remove", description: err.error });
+          toast({ variant: "destructive", title: "Failed to remove", description: err?.data?.error || err?.message });
         }
       }
     );

@@ -37,10 +37,10 @@ export default function LoginPage() {
         onSuccess: (res) => {
           if (res.ok && res.token && res.user) {
             login(res.token, res.user);
-            toast({ title: "Welcome back!", description: "Successfully signed in." });
+            toast({ variant: "success", title: "Welcome back!", description: "Successfully signed in." });
             setLocation("/dashboard");
           } else if (res.requiresVerification) {
-            toast({ title: "Verification required", description: "Please verify your email." });
+            toast({ variant: "success", title: "Verification required", description: "Please verify your email." });
             setLocation("/verify-email");
           } else {
             toast({ variant: "destructive", title: "Login failed", description: res.message || "Invalid credentials." });

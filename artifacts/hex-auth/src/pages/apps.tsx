@@ -37,12 +37,12 @@ export default function AppsPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetAppsQueryKey() });
-          toast({ title: "App created successfully" });
+          toast({ variant: "success", title: "App created successfully" });
           setIsCreateOpen(false);
           setNewAppName("");
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Failed to create app", description: err.error });
+          toast({ variant: "destructive", title: "Failed to create app", description: err?.data?.error || err?.message });
         }
       }
     );
@@ -54,10 +54,10 @@ export default function AppsPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetAppsQueryKey() });
-          toast({ title: "App deleted" });
+          toast({ variant: "success", title: "App deleted" });
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Failed to delete app", description: err.error });
+          toast({ variant: "destructive", title: "Failed to delete app", description: err?.data?.error || err?.message });
         }
       }
     );

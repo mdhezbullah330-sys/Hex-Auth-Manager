@@ -42,11 +42,11 @@ export default function LicensesPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetLicensesQueryKey() });
-          toast({ title: "Licenses generated successfully" });
+          toast({ variant: "success", title: "Licenses generated successfully" });
           setIsGenerateOpen(false);
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Failed to generate", description: err.error });
+          toast({ variant: "destructive", title: "Failed to generate", description: err?.data?.error || err?.message });
         }
       }
     );
@@ -58,10 +58,10 @@ export default function LicensesPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetLicensesQueryKey() });
-          toast({ title: "License deleted" });
+          toast({ variant: "success", title: "License deleted" });
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Failed to delete", description: err.error });
+          toast({ variant: "destructive", title: "Failed to delete", description: err?.data?.error || err?.message });
         }
       }
     );
@@ -74,11 +74,11 @@ export default function LicensesPage() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetLicensesQueryKey() });
-          toast({ title: "License redeemed successfully" });
+          toast({ variant: "success", title: "License redeemed successfully" });
           setRedeemKey("");
         },
         onError: (err: any) => {
-          toast({ variant: "destructive", title: "Failed to redeem", description: err.error });
+          toast({ variant: "destructive", title: "Failed to redeem", description: err?.data?.error || err?.message });
         }
       }
     );

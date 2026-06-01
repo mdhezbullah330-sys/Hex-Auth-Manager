@@ -38,36 +38,36 @@ export default function SettingsPage() {
   const handleProfileUpdate = () => {
     updateProfileMutation.mutate({ data: profileData }, {
       onSuccess: () => {
-        toast({ title: "Profile updated" });
+        toast({ variant: "success", title: "Profile updated" });
       },
-      onError: (err: any) => toast({ variant: "destructive", title: "Update failed", description: err.error })
+      onError: (err: any) => toast({ variant: "destructive", title: "Update failed", description: err?.data?.error || err?.message })
     });
   };
 
   const handlePasswordUpdate = () => {
     updatePasswordMutation.mutate({ data: passwordData }, {
       onSuccess: () => {
-        toast({ title: "Password updated" });
+        toast({ variant: "success", title: "Password updated" });
         setPasswordData({ currentPassword: "", newPassword: "" });
       },
-      onError: (err: any) => toast({ variant: "destructive", title: "Update failed", description: err.error })
+      onError: (err: any) => toast({ variant: "destructive", title: "Update failed", description: err?.data?.error || err?.message })
     });
   };
 
   const handleWebhookUpdate = () => {
     updateWebhookMutation.mutate({ data: { webhookUrl: webhookUrl || null } }, {
-      onSuccess: () => toast({ title: "Webhook settings updated" }),
-      onError: (err: any) => toast({ variant: "destructive", title: "Update failed", description: err.error })
+      onSuccess: () => toast({ variant: "success", title: "Webhook settings updated" }),
+      onError: (err: any) => toast({ variant: "destructive", title: "Update failed", description: err?.data?.error || err?.message })
     });
   };
 
   const handleInvite = () => {
     inviteMutation.mutate({ data: inviteData }, {
       onSuccess: () => {
-        toast({ title: "Invite sent", description: `They will receive an email with an accept link.` });
+        toast({ variant: "success", title: "Invite sent", description: `They will receive an email with an accept link.` });
         setInviteData({ email: "", role: "viewer" });
       },
-      onError: (err: any) => toast({ variant: "destructive", title: "Invite failed", description: err.error })
+      onError: (err: any) => toast({ variant: "destructive", title: "Invite failed", description: err?.data?.error || err?.message })
     });
   };
 
