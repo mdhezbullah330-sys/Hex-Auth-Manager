@@ -67,7 +67,7 @@ function Endpoint({ method, path, desc, auth = false, children }: { method: "GET
       <div className="flex items-center gap-3 mb-2 flex-wrap">
         <Badge type={method} />
         <code className="font-mono text-sm text-white/90 bg-white/5 px-2 py-0.5 rounded">{path}</code>
-        {auth && <span className="text-xs text-yellow-400 border border-yellow-500/30 bg-yellow-500/10 px-2 py-0.5 rounded">🔒 Auth required</span>}
+        {auth && <span className="inline-flex items-center gap-1 text-xs text-yellow-400 border border-yellow-500/30 bg-yellow-500/10 px-2 py-0.5 rounded"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Auth required</span>}
       </div>
       <p className="text-sm text-white/60 mb-3">{desc}</p>
       {children}

@@ -18,7 +18,8 @@ import {
   ArrowUpCircle,
   BookOpen,
   LogOut,
-  Menu
+  Menu,
+  X
 } from "lucide-react";
 import { useLogout } from "@workspace/api-client-react";
 
@@ -83,93 +84,143 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const SidebarContent = () => (
+    <>
+      <div className="p-6 flex items-center justify-between">
+        <Logo />
+        <button
+          className="md:hidden p-1 rounded text-sidebar-foreground/50 hover:text-sidebar-foreground"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-5 scrollbar-none">
+        {navigation.map((group) => (
+          <div key={group.label}>
+            <div className="px-3 mb-1.5 text-[10px] font-bold text-sidebar-foreground/40 tracking-widest uppercase">
+              {group.label}
+            </div>
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const isActive =
+                  location === item.href ||
+                  location.startsWith(item.href + "/");
+                return (
+                  <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)}>
+                    <span
+                      className={`
+                        group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+                        cursor-pointer select-none overflow-hidden
+                        transition-all duration-200 ease-out
+                        ${isActive
+                          ? "bg-primary/15 text-foreground shadow-sm"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                        }
+                      `}
+                    >
+                      {/* Active left bar */}
+                      <span
+                        className={`
+                          absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-r-full bg-primary
+                          transition-all duration-300 ease-out
+                          ${isActive ? "h-5 opacity-100" : "h-0 opacity-0"}
+                        `}
+                      />
+
+                      {/* Icon with scale+color transition */}
+                      <item.icon
+                        className={`
+                          w-4 h-4 shrink-0
+                          transition-all duration-200 ease-out
+                          ${isActive
+                            ? "text-primary scale-110"
+                            : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80 group-hover:scale-105"
+                          }
+                        `}
+                      />
+
+                      {/* Label with slide */}
+                      <span className="truncate leading-none">{item.label}</span>
+
+                      {/* Active glow dot */}
+                      {isActive && (
+                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0 animate-pulse" />
+                      )}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* User Footer */}
+      <div className="p-4 border-t border-sidebar-border">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+              {user?.username?.charAt(0).toUpperCase() || "U"}
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-sm font-semibold truncate leading-tight">{user?.username}</p>
+              <span className="text-[10px] uppercase tracking-wider text-primary font-bold">
+                {user?.plan || "FREE"}
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            onClick={handleLogout}
+            title="Sign out"
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex min-h-screen w-full bg-background overflow-hidden text-foreground selection:bg-primary/30">
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-14 border-b border-border bg-card flex items-center justify-between px-4 z-50">
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 border-b border-border bg-card/95 backdrop-blur-sm flex items-center justify-between px-4 z-50">
         <Logo size="sm" />
-        <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+        <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
           <Menu className="w-5 h-5" />
         </Button>
       </div>
 
-      {/* Sidebar */}
-      <aside className={`
-        fixed md:sticky top-0 left-0 z-40 h-screen w-64 bg-sidebar border-r border-sidebar-border
-        flex flex-col transition-transform duration-200 ease-in-out
-        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-      `}>
-        <div className="p-6">
-          <Logo />
-        </div>
-        
-        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6 scrollbar-none">
-          {navigation.map((group) => (
-            <div key={group.label}>
-              <div className="px-2 mb-2 text-xs font-semibold text-sidebar-foreground/50 tracking-wider">
-                {group.label}
-              </div>
-              <div className="space-y-1">
-                {group.items.map((item) => {
-                  const isActive = location === item.href || location.startsWith(item.href + "/");
-                  return (
-                    <Link key={item.href} href={item.href}>
-                      <span className={`
-                        flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer
-                        ${isActive 
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground" 
-                          : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"}
-                      `}>
-                        <item.icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-sidebar-foreground/70"}`} />
-                        {item.label}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* User Footer */}
-        <div className="p-4 border-t border-sidebar-border bg-sidebar/50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
-                {user?.username?.charAt(0).toUpperCase() || "U"}
-              </div>
-              <div className="overflow-hidden">
-                <p className="text-sm font-medium truncate">{user?.username}</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wider text-primary font-bold px-1.5 py-0.5 rounded-sm bg-primary/10 border border-primary/20">
-                    {user?.plan || "FREE"}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-destructive" onClick={handleLogout}>
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex fixed top-0 left-0 z-40 h-screen w-60 bg-sidebar border-r border-sidebar-border flex-col">
+        <SidebarContent />
       </aside>
 
+      {/* Mobile Sidebar Drawer */}
+      {isMobileMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <aside className="fixed top-0 left-0 z-50 h-screen w-60 bg-sidebar border-r border-sidebar-border flex flex-col md:hidden animate-in slide-in-from-left duration-200">
+            <SidebarContent />
+          </aside>
+        </>
+      )}
+
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 pt-14 md:pt-0">
+      <main className="flex-1 flex flex-col min-w-0 md:ml-60 pt-14 md:pt-0">
         <div className="flex-1 overflow-auto p-4 md:p-8">
           <div className="mx-auto max-w-6xl">
             {children}
           </div>
         </div>
       </main>
-
-      {/* Mobile overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -131,8 +132,8 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">
                   Confirm Password
-                  {matchState === "match" && <span className="ml-2 text-xs text-emerald-500 font-medium">✓ Passwords match</span>}
-                  {matchState === "mismatch" && <span className="ml-2 text-xs text-red-500 font-medium">✗ Does not match</span>}
+                  {matchState === "match" && <span className="ml-2 inline-flex items-center gap-1 text-xs text-emerald-500 font-medium"><CheckCircle2 className="w-3 h-3" />Passwords match</span>}
+                  {matchState === "mismatch" && <span className="ml-2 inline-flex items-center gap-1 text-xs text-red-500 font-medium"><XCircle className="w-3 h-3" />Does not match</span>}
                 </Label>
                 <AnimatedInput
                   id="confirmPassword"
