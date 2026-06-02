@@ -3,6 +3,8 @@ import { Link, useLocation } from "wouter";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import { useRegister } from "@workspace/api-client-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, XCircle } from "lucide-react";
 
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -24,6 +25,28 @@ const registerSchema = z.object({
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
+
+function FieldError({ message }: { message?: string }) {
+  return (
+    <AnimatePresence mode="wait">
+      {message && (
+        <motion.div
+          key={message}
+          initial={{ opacity: 0, y: -6, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: "auto" }}
+          exit={{ opacity: 0, y: -4, height: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="overflow-hidden"
+        >
+          <p className="flex items-center gap-1.5 text-xs text-destructive mt-1 bg-destructive/8 border border-destructive/20 rounded-md px-2.5 py-1.5">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            {message}
+          </p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 export default function RegisterPage() {
   const [, setLocation] = useLocation();
@@ -94,46 +117,68 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="username">Username</Label>
                 <AnimatedInput
                   id="username"
                   typedPlaceholder="developer123"
                   {...register("username")}
-                  className={errors.username ? "border-destructive" : ""}
+                  className={errors.username ? "border-destructive focus-visible:ring-destructive/30" : ""}
                 />
-                {errors.username && <p className="text-xs text-destructive">{errors.username.message}</p>}
+                <FieldError message={errors.username?.message} />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="email">Email</Label>
                 <AnimatedInput
                   id="email"
                   type="email"
                   typedPlaceholder="you@example.com"
                   {...register("email")}
-                  className={errors.email ? "border-destructive" : ""}
+                  className={errors.email ? "border-destructive focus-visible:ring-destructive/30" : ""}
                 />
-                {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+                <FieldError message={errors.email?.message} />
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="password">Password</Label>
                 <AnimatedInput
                   id="password"
                   type="password"
                   typedPlaceholder="••••••••"
                   {...register("password")}
-                  className={errors.password ? "border-destructive" : ""}
+                  className={errors.password ? "border-destructive focus-visible:ring-destructive/30" : ""}
                 />
-                {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+                <FieldError message={errors.password?.message} />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="confirmPassword">
                   Confirm Password
-                  {matchState === "match" && <span className="ml-2 inline-flex items-center gap-1 text-xs text-emerald-500 font-medium"><CheckCircle2 className="w-3 h-3" />Passwords match</span>}
-                  {matchState === "mismatch" && <span className="ml-2 inline-flex items-center gap-1 text-xs text-red-500 font-medium"><XCircle className="w-3 h-3" />Does not match</span>}
+                  <AnimatePresence mode="wait">
+                    {matchState === "match" && (
+                      <motion.span
+                        key="match"
+                        initial={{ opacity: 0, x: -4 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="ml-2 inline-flex items-center gap-1 text-xs text-emerald-500 font-medium"
+                      >
+                        <CheckCircle2 className="w-3 h-3" />Passwords match
+                      </motion.span>
+                    )}
+                    {matchState === "mismatch" && (
+                      <motion.span
+                        key="mismatch"
+                        initial={{ opacity: 0, x: -4 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="ml-2 inline-flex items-center gap-1 text-xs text-red-500 font-medium"
+                      >
+                        <XCircle className="w-3 h-3" />Does not match
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </Label>
                 <AnimatedInput
                   id="confirmPassword"
@@ -143,7 +188,7 @@ export default function RegisterPage() {
                   className={cn("transition-colors", confirmBorderClass)}
                 />
                 {errors.confirmPassword && matchState === "idle" && (
-                  <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+                  <FieldError message={errors.confirmPassword.message} />
                 )}
               </div>
               

@@ -3,6 +3,8 @@ import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertCircle } from "lucide-react";
 import { useLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/logo";
@@ -18,6 +20,28 @@ const loginSchema = z.object({
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
+
+function FieldError({ message }: { message?: string }) {
+  return (
+    <AnimatePresence mode="wait">
+      {message && (
+        <motion.div
+          key={message}
+          initial={{ opacity: 0, y: -6, height: 0 }}
+          animate={{ opacity: 1, y: 0, height: "auto" }}
+          exit={{ opacity: 0, y: -4, height: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="overflow-hidden"
+        >
+          <p className="flex items-center gap-1.5 text-xs text-destructive mt-1 bg-destructive/8 border border-destructive/20 rounded-md px-2.5 py-1.5">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            {message}
+          </p>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
@@ -72,29 +96,29 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="identifier">Username or Email</Label>
                 <AnimatedInput
                   id="identifier"
                   typedPlaceholder="admin"
                   {...register("identifier")}
-                  className={errors.identifier ? "border-destructive" : ""}
+                  className={errors.identifier ? "border-destructive focus-visible:ring-destructive/30" : ""}
                   autoComplete="username"
                 />
-                {errors.identifier && <p className="text-xs text-destructive">{errors.identifier.message}</p>}
+                <FieldError message={errors.identifier?.message} />
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label htmlFor="password">Password</Label>
                 <AnimatedInput
                   id="password"
                   type="password"
                   typedPlaceholder="••••••••"
                   {...register("password")}
-                  className={errors.password ? "border-destructive" : ""}
+                  className={errors.password ? "border-destructive focus-visible:ring-destructive/30" : ""}
                   autoComplete="current-password"
                 />
-                {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+                <FieldError message={errors.password?.message} />
               </div>
               
               <Button type="submit" className="w-full font-semibold" disabled={loginMutation.isPending}>
