@@ -75,9 +75,7 @@ externalPort = 80
 [userenv]
 
 [userenv.shared]
-SMTP_HOST = "smtp.gmail.com"
-SMTP_PORT = "465"
-SMTP_USER = "mdhezbullah330@gmail.com"
-SMTP_FROM = "Hex Auth <mdhezbullah330@gmail.com>"
 LOG_LEVEL = "info"
-SMTP_PASS = "hbuhcphsgejeddxk"
+SMTP_HOST = "smtp-relay.brevo.com"
+SMTP_PORT = "587"
+SMTP_FROM = "Hex Auth <noreply@benjahexauth.qzz.io>"

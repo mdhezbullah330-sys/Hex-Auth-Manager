@@ -3,9 +3,10 @@ import { logger } from "./logger";
 
 function createTransporter() {
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT ?? "465"),
-    secure: (process.env.SMTP_PORT ?? "465") === "465",
+    host: process.env.SMTP_HOST ?? "smtp-relay.brevo.com",
+    port: parseInt(process.env.SMTP_PORT ?? "587"),
+    secure: false,
+    requireTLS: true,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
@@ -18,7 +19,7 @@ export async function sendVerificationEmail(
   code: string,
   username: string = "there"
 ): Promise<void> {
-  const from = process.env.SMTP_FROM!;
+  const from = process.env.SMTP_FROM ?? "Hex Auth <noreply@benjahexauth.qzz.io>";
 
   if (!process.env.SMTP_PASS) {
     logger.info({ email, code }, "Email verification code (SMTP not configured)");
@@ -32,188 +33,19 @@ export async function sendVerificationEmail(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Verify your Hex Auth account</title>
 </head>
-<body style="margin:0;padding:0;background:#f5f4ef;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f4ef;padding:40px 0;">
-    <tr>
-      <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
-
-          <!-- Logo / Header -->
-          <tr>
-            <td align="center" style="padding:0 0 28px 0;">
-              <table cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background:#18181b;border-radius:10px;padding:10px 14px;display:inline-block;">
-                    <span style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.5px;">
-                      <span style="color:#7c3aed;">HEX</span>AUTH
-                    </span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-
-          <!-- Card -->
-          <tr>
-            <td style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
-
-              <!-- Purple top bar -->
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background:linear-gradient(90deg,#7c3aed,#6d28d9);height:4px;"></td>
-                </tr>
-              </table>
-
-              <!-- Body -->
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="padding:40px 48px 0 48px;">
-                    <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:700;color:#18181b;">Verify your email address</h1>
-                    <p style="margin:0 0 24px 0;font-size:15px;color:#52525b;line-height:1.6;">
-                      Hi <strong style="color:#18181b;">${username}</strong> — thanks for signing up.
-                      Use the code below to complete your Hex Auth registration.
-                    </p>
-                  </td>
-                </tr>
-
-                <!-- Code box -->
-                <tr>
-                  <td style="padding:0 48px;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="background:#fafaf8;border:1px solid #e4e4e7;border-radius:12px;padding:28px;text-align:center;">
-                          <p style="margin:0 0 12px 0;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#a1a1aa;">Your Verification Code</p>
-                          <p style="margin:0 0 10px 0;font-size:44px;font-weight:800;letter-spacing:0.18em;color:#18181b;font-family:'Courier New',Courier,monospace;">${code}</p>
-                          <p style="margin:0;font-size:13px;color:#71717a;">Expires in <strong>15 minutes</strong></p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-
-                <!-- Info rows -->
-                <tr>
-                  <td style="padding:24px 48px 0 48px;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td style="border-top:1px solid #f4f4f5;padding:16px 0;">
-                          <table cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="width:28px;vertical-align:top;padding-top:2px;">
-                                <span style="display:inline-block;width:18px;height:18px;background:#f4f4f5;border-radius:4px;text-align:center;line-height:18px;font-size:11px;color:#7c3aed;font-weight:700;">&#9632;</span>
-                              </td>
-                              <td style="font-size:14px;color:#52525b;line-height:1.5;">
-                                Never share this code. <strong>Hex Auth</strong> will never ask for it.
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="border-top:1px solid #f4f4f5;padding:16px 0;">
-                          <table cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="width:28px;vertical-align:top;padding-top:2px;">
-                                <span style="display:inline-block;width:18px;height:18px;background:#f4f4f5;border-radius:4px;text-align:center;line-height:18px;font-size:11px;color:#7c3aed;font-weight:700;">&#9650;</span>
-                              </td>
-                              <td style="font-size:14px;color:#52525b;line-height:1.5;">
-                                Once verified you'll have instant access to your dashboard.
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-
-                <!-- Footer -->
-                <tr>
-                  <td style="padding:24px 48px 36px 48px;border-top:1px solid #f4f4f5;margin-top:8px;">
-                    <p style="margin:0;font-size:12px;color:#a1a1aa;line-height:1.6;">
-                      If you didn't create a Hex Auth account, you can safely ignore this email — no account will be created.<br/>
-                      This code was requested for <a href="mailto:${email}" style="color:#7c3aed;text-decoration:none;">${email}</a>.
-                    </p>
-                  </td>
-                </tr>
-
-              </table>
-            </td>
-          </tr>
-
-          <!-- Bottom note -->
-          <tr>
-            <td style="padding:24px 0 0 0;text-align:center;">
-              <p style="margin:0;font-size:12px;color:#a1a1aa;">© 2026 Hex Auth. All rights reserved.</p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-
-  const subject = `${code} is your Hex Auth verification code`;
-
-  try {
-    const transporter = createTransporter();
-    await transporter.sendMail({
-      from,
-      to: email,
-      subject,
-      html,
-    });
-    logger.info({ email }, "Verification email sent via Resend");
-  } catch (err: any) {
-    // Log the error but do NOT throw — user is already created in DB.
-    // On Resend free plan, only the verified owner email can receive mail.
-    // Other recipients will fail here; the dev-code endpoint still works.
-    logger.error({ err: err?.message ?? err }, "Failed to send verification email (email delivery failed — user still created)");
-  }
-}
-
-export async function sendTeamInviteEmail(
-  email: string,
-  inviterUsername: string,
-  role: string,
-  acceptLink: string
-): Promise<void> {
-  const from = process.env.SMTP_FROM!;
-
-  if (!process.env.SMTP_PASS) {
-    logger.info({ email, acceptLink }, "Team invite email (SMTP not configured)");
-    return;
-  }
-
-  const roleLabel = role === "admin" ? "Admin" : "Viewer";
-  const roleDesc = role === "admin"
-    ? "Full access to create, edit, and manage resources."
-    : "Read-only access to view all dashboard data.";
-  const roleBadgeBg = role === "admin" ? "#1e3a5f" : "#1a1a2e";
-  const roleBadgeColor = role === "admin" ? "#60a5fa" : "#a78bfa";
-
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Team Invitation — Hex Auth</title>
-</head>
-<body style="margin:0;padding:0;background:#f0eff9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0eff9;padding:48px 16px;">
+<body style="margin:0;padding:0;background:#0f0f13;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f13;padding:48px 16px;">
     <tr>
       <td align="center">
         <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
 
           <!-- Logo -->
           <tr>
-            <td align="center" style="padding:0 0 32px 0;">
+            <td align="center" style="padding:0 0 28px 0;">
               <table cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background:#18181b;border-radius:12px;padding:11px 18px;">
-                    <span style="font-size:19px;font-weight:800;color:#fff;letter-spacing:-0.5px;font-family:sans-serif;">
+                  <td style="background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 20px;">
+                    <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;font-family:sans-serif;">
                       <span style="color:#8b5cf6;">HEX</span>AUTH
                     </span>
                   </td>
@@ -224,74 +56,47 @@ export async function sendTeamInviteEmail(
 
           <!-- Card -->
           <tr>
-            <td style="background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(124,58,237,0.10),0 1px 4px rgba(0,0,0,0.06);">
+            <td style="background:#18181b;border:1px solid #27272a;border-radius:20px;overflow:hidden;box-shadow:0 0 40px rgba(139,92,246,0.12);">
 
-              <!-- Purple gradient header -->
+              <!-- Gradient top bar -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background:linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%);padding:36px 48px 32px 48px;">
-                    <p style="margin:0 0 6px 0;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.6);">Team Invitation</p>
-                    <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;line-height:1.3;">You have been invited to join a team</h1>
+                  <td style="background:linear-gradient(90deg,#7c3aed,#4f46e5,#7c3aed);height:3px;"></td>
+                </tr>
+              </table>
+
+              <!-- Header -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:36px 44px 28px 44px;border-bottom:1px solid #27272a;">
+                    <table cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="background:#2d1b69;border:1px solid #4c1d95;border-radius:10px;padding:8px 14px;margin-bottom:16px;display:inline-block;">
+                          <span style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#a78bfa;">Email Verification</span>
+                        </td>
+                      </tr>
+                    </table>
+                    <h1 style="margin:14px 0 8px 0;font-size:24px;font-weight:700;color:#f4f4f5;line-height:1.3;">Verify your email address</h1>
+                    <p style="margin:0;font-size:15px;color:#71717a;line-height:1.6;">
+                      Hi <strong style="color:#e4e4e7;">${username}</strong> — use the code below to complete your Hex Auth registration.
+                    </p>
                   </td>
                 </tr>
               </table>
 
-              <!-- Body -->
+              <!-- OTP Code box -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="padding:36px 48px 0 48px;">
-                    <p style="margin:0 0 24px 0;font-size:15px;color:#374151;line-height:1.7;">
-                      Hi there — <strong style="color:#111827;">${inviterUsername}</strong> has invited you to collaborate on their <strong style="color:#111827;">Hex Auth</strong> workspace. Your role will be:
-                    </p>
-
-                    <!-- Role badge -->
-                    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-                      <tr>
-                        <td style="background:${roleBadgeBg};border:1px solid ${roleBadgeColor}30;border-radius:10px;padding:14px 20px;">
-                          <p style="margin:0 0 2px 0;font-size:13px;font-weight:700;color:${roleBadgeColor};letter-spacing:0.06em;text-transform:uppercase;">${roleLabel}</p>
-                          <p style="margin:0;font-size:13px;color:#6b7280;">${roleDesc}</p>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <!-- CTA Button -->
-                    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-                      <tr>
-                        <td style="border-radius:10px;overflow:hidden;">
-                          <a href="${acceptLink}"
-                             style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#ffffff;text-decoration:none;padding:15px 36px;border-radius:10px;font-weight:700;font-size:15px;letter-spacing:0.01em;">
-                            Accept Invitation
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <!-- Info rows -->
+                  <td style="padding:32px 44px;">
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="border-top:1px solid #f3f4f6;padding:16px 0;">
-                          <table cellpadding="0" cellspacing="0">
+                        <td style="background:#0f0f13;border:1px solid #3f3f46;border-radius:14px;padding:28px;text-align:center;">
+                          <p style="margin:0 0 12px 0;font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#52525b;">One-Time Verification Code</p>
+                          <p style="margin:0 0 10px 0;font-size:48px;font-weight:800;letter-spacing:0.22em;color:#a78bfa;font-family:'Courier New',Courier,monospace;">${code}</p>
+                          <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
                             <tr>
-                              <td style="width:24px;vertical-align:top;padding-top:1px;">
-                                <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#f3f0ff;border:1.5px solid #7c3aed;"></span>
-                              </td>
-                              <td style="padding-left:10px;font-size:13px;color:#6b7280;line-height:1.6;">
-                                You need a <strong style="color:#374151;">Hex Auth account</strong> to accept. Don't have one?
-                                <a href="${acceptLink.replace('/api/settings/team/accept/', '/register')}" style="color:#7c3aed;text-decoration:none;font-weight:600;">Register here</a>.
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="border-top:1px solid #f3f4f6;padding:16px 0 0 0;">
-                          <table cellpadding="0" cellspacing="0">
-                            <tr>
-                              <td style="width:24px;vertical-align:top;padding-top:1px;">
-                                <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#f3f0ff;border:1.5px solid #7c3aed;"></span>
-                              </td>
-                              <td style="padding-left:10px;font-size:13px;color:#6b7280;line-height:1.6;">
-                                This invitation link expires in <strong style="color:#374151;">48 hours</strong>. If it has expired, ask ${inviterUsername} to resend.
+                              <td style="background:#1c1917;border:1px solid #292524;border-radius:20px;padding:5px 14px;">
+                                <span style="font-size:12px;color:#78716c;">⏱ Expires in <strong style="color:#a8a29e;">15 minutes</strong></span>
                               </td>
                             </tr>
                           </table>
@@ -300,13 +105,53 @@ export async function sendTeamInviteEmail(
                     </table>
                   </td>
                 </tr>
+              </table>
 
-                <!-- Footer inside card -->
+              <!-- Info rows -->
+              <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="padding:24px 48px 32px 48px;">
-                    <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.7;border-top:1px solid #f3f4f6;padding-top:20px;">
-                      If you were not expecting this invitation, you can safely ignore it. No account changes will be made.<br/>
-                      This invite was sent to <strong>${email}</strong>.
+                  <td style="padding:0 44px 12px 44px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #27272a;border-radius:12px;overflow:hidden;">
+                      <tr>
+                        <td style="padding:14px 18px;border-bottom:1px solid #27272a;">
+                          <table cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="width:28px;vertical-align:top;padding-top:1px;">
+                                <span style="display:inline-block;width:18px;height:18px;background:#1c1917;border:1px solid #44403c;border-radius:5px;text-align:center;line-height:18px;font-size:10px;">🔒</span>
+                              </td>
+                              <td style="font-size:13px;color:#71717a;line-height:1.5;padding-left:8px;">
+                                Never share this code. <strong style="color:#a1a1aa;">Hex Auth will never ask for it.</strong>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:14px 18px;">
+                          <table cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="width:28px;vertical-align:top;padding-top:1px;">
+                                <span style="display:inline-block;width:18px;height:18px;background:#1c1917;border:1px solid #44403c;border-radius:5px;text-align:center;line-height:18px;font-size:10px;">✅</span>
+                              </td>
+                              <td style="font-size:13px;color:#71717a;line-height:1.5;padding-left:8px;">
+                                Once verified, you'll get instant access to your dashboard.
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Footer -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:20px 44px 32px 44px;border-top:1px solid #27272a;">
+                    <p style="margin:0;font-size:12px;color:#52525b;line-height:1.7;">
+                      If you didn't create a Hex Auth account, ignore this email — no account will be created.<br/>
+                      This code was requested for <a href="mailto:${email}" style="color:#7c3aed;text-decoration:none;">${email}</a>.
                     </p>
                   </td>
                 </tr>
@@ -317,10 +162,188 @@ export async function sendTeamInviteEmail(
 
           <!-- Bottom note -->
           <tr>
-            <td style="padding:28px 0 0 0;text-align:center;">
-              <p style="margin:0;font-size:12px;color:#9ca3af;">
-                &copy; 2026 Hex Auth &nbsp;&middot;&nbsp; Authentication Platform
-              </p>
+            <td style="padding:24px 0 0 0;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#3f3f46;">© 2026 Hex Auth · All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const subject = `${code} — Your Hex Auth Verification Code`;
+
+  try {
+    const transporter = createTransporter();
+    await transporter.sendMail({ from, to: email, subject, html });
+    logger.info({ email }, "Verification email sent via Brevo");
+  } catch (err: any) {
+    logger.error({ err: err?.message ?? err }, "Failed to send verification email");
+  }
+}
+
+export async function sendTeamInviteEmail(
+  email: string,
+  inviterUsername: string,
+  role: string,
+  acceptLink: string
+): Promise<void> {
+  const from = process.env.SMTP_FROM ?? "Hex Auth <noreply@benjahexauth.qzz.io>";
+
+  if (!process.env.SMTP_PASS) {
+    logger.info({ email, acceptLink }, "Team invite email (SMTP not configured)");
+    return;
+  }
+
+  const roleLabel = role === "admin" ? "Admin" : "Viewer";
+  const roleDesc = role === "admin"
+    ? "Full access to create, edit, and manage all resources."
+    : "Read-only access to view all dashboard data.";
+  const roleBadgeBorder = role === "admin" ? "#3b82f6" : "#8b5cf6";
+  const roleBadgeBg = role === "admin" ? "#172554" : "#2e1065";
+  const roleBadgeColor = role === "admin" ? "#93c5fd" : "#c4b5fd";
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Team Invitation — Hex Auth</title>
+</head>
+<body style="margin:0;padding:0;background:#0f0f13;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f13;padding:48px 16px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding:0 0 28px 0;">
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:#18181b;border:1px solid #27272a;border-radius:12px;padding:11px 20px;">
+                    <span style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;font-family:sans-serif;">
+                      <span style="color:#8b5cf6;">HEX</span>AUTH
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#18181b;border:1px solid #27272a;border-radius:20px;overflow:hidden;box-shadow:0 0 40px rgba(139,92,246,0.12);">
+
+              <!-- Gradient top bar -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:linear-gradient(90deg,#7c3aed,#4f46e5,#7c3aed);height:3px;"></td>
+                </tr>
+              </table>
+
+              <!-- Hero header -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:linear-gradient(135deg,#1e0a3c 0%,#1a1035 60%,#0f0f1a 100%);padding:40px 44px 36px 44px;border-bottom:1px solid #27272a;">
+                    <table cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+                      <tr>
+                        <td style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);border-radius:20px;padding:5px 14px;">
+                          <span style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#a78bfa;">Team Invitation</span>
+                        </td>
+                      </tr>
+                    </table>
+                    <h1 style="margin:0 0 10px 0;font-size:26px;font-weight:800;color:#f4f4f5;line-height:1.3;">You've been invited! 🎉</h1>
+                    <p style="margin:0;font-size:15px;color:#a1a1aa;line-height:1.6;">
+                      <strong style="color:#e4e4e7;">${inviterUsername}</strong> has invited you to collaborate on their Hex Auth workspace.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Body -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:32px 44px 28px 44px;">
+
+                    <!-- Role badge -->
+                    <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;">
+                      <tr>
+                        <td style="background:${roleBadgeBg};border:1px solid ${roleBadgeBorder}40;border-left:3px solid ${roleBadgeBorder};border-radius:10px;padding:16px 20px;">
+                          <p style="margin:0 0 4px 0;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:${roleBadgeColor}60;">Your Role</p>
+                          <p style="margin:0 0 4px 0;font-size:16px;font-weight:800;color:${roleBadgeColor};">${roleLabel}</p>
+                          <p style="margin:0;font-size:13px;color:#6b7280;">${roleDesc}</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- CTA Button -->
+                    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;width:100%;">
+                      <tr>
+                        <td align="center">
+                          <a href="${acceptLink}"
+                             style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#ffffff;text-decoration:none;padding:16px 48px;border-radius:12px;font-weight:700;font-size:16px;letter-spacing:0.01em;box-shadow:0 4px 24px rgba(124,58,237,0.4);">
+                            ✓ &nbsp;Accept Invitation
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Info rows -->
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #27272a;border-radius:12px;overflow:hidden;">
+                      <tr>
+                        <td style="padding:14px 18px;border-bottom:1px solid #27272a;">
+                          <table cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="width:26px;vertical-align:top;padding-top:1px;font-size:14px;">👤</td>
+                              <td style="font-size:13px;color:#71717a;line-height:1.6;padding-left:8px;">
+                                You need a <strong style="color:#a1a1aa;">Hex Auth account</strong> to accept.
+                                <a href="${acceptLink.split("/api/")[0]}/register" style="color:#8b5cf6;text-decoration:none;font-weight:600;">Register here</a> if you don't have one.
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:14px 18px;">
+                          <table cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="width:26px;vertical-align:top;padding-top:1px;font-size:14px;">⏳</td>
+                              <td style="font-size:13px;color:#71717a;line-height:1.6;padding-left:8px;">
+                                This invitation link expires in <strong style="color:#a1a1aa;">48 hours</strong>. Ask ${inviterUsername} to resend if it expires.
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Footer inside card -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:0 44px 28px 44px;border-top:1px solid #27272a;">
+                    <p style="margin:0;padding-top:20px;font-size:12px;color:#52525b;line-height:1.7;">
+                      If you were not expecting this invitation, you can safely ignore it. No changes will be made to any account.<br/>
+                      This invite was sent to <strong style="color:#71717a;">${email}</strong>.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Bottom note -->
+          <tr>
+            <td style="padding:24px 0 0 0;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#3f3f46;">© 2026 Hex Auth · Authentication Platform</p>
             </td>
           </tr>
 
@@ -339,7 +362,8 @@ export async function sendTeamInviteEmail(
       subject: `${inviterUsername} invited you to join their Hex Auth team`,
       html,
     });
-  } catch (err) {
-    logger.error({ err }, "Failed to send team invite email");
+    logger.info({ email }, "Team invite email sent via Brevo");
+  } catch (err: any) {
+    logger.error({ err: err?.message ?? err }, "Failed to send team invite email");
   }
 }
