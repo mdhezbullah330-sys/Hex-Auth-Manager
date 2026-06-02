@@ -63,15 +63,22 @@ export default function LoginPage() {
             login(res.token, res.user);
             toast({ variant: "success", title: "Welcome back!", description: "Successfully signed in." });
             setLocation("/dashboard");
-          } else if (res.requiresVerification) {
-            toast({ title: "Verification required", description: "Please verify your email." });
-            setLocation("/verify-email");
           } else {
             toast({ variant: "destructive", title: "Login failed", description: res.message || "Invalid credentials." });
           }
         },
         onError: (err: any) => {
-          const msg = err?.data?.error || err?.message || "An error occurred.";
+          const errData = err?.data ?? err?.response?.data;
+          // Unverified account — backend auto-resent the code, redirect to verify page
+          if (errData?.requiresVerification && errData?.email) {
+            toast({
+              title: "Email verification required",
+              description: "A verification code has been sent to your email.",
+            });
+            setLocation(`/verify-email?email=${encodeURIComponent(errData.email)}`);
+            return;
+          }
+          const msg = errData?.message || errData?.error || err?.message || "An error occurred.";
           toast({ variant: "destructive", title: "Login failed", description: msg });
         }
       }

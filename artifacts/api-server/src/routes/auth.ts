@@ -157,10 +157,26 @@ router.post("/auth/login", async (req, res): Promise<void> => {
 
   const user = await User.findOne({ $or: [{ email: identifier }, { username: identifier }] });
   if (!user) {
-    // Check if there's a pending registration
+    // Check if there's a pending registration — auto-resend code and redirect
     const pending = await PendingRegistration.findOne({ $or: [{ email: identifier }, { username: identifier }] });
     if (pending) {
-      res.status(401).json({ ok: false, message: "Please verify your email first.", requiresVerification: true, email: pending.email });
+      // Verify password matches what they registered with
+      const passwordMatch = await bcrypt.compare(password, pending.passwordHash);
+      if (!passwordMatch) {
+        res.status(401).json({ ok: false, message: "Invalid credentials" }); return;
+      }
+      // Auto-resend a fresh code
+      const code = generateCode();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+      try {
+        await sendVerificationEmail(pending.email, code, pending.username);
+        pending.code = code;
+        pending.expiresAt = expiresAt;
+        await pending.save();
+      } catch {
+        // Silently continue — still redirect to verify page
+      }
+      res.status(401).json({ ok: false, message: "Please verify your email first. A new code has been sent.", requiresVerification: true, email: pending.email });
       return;
     }
     res.status(401).json({ ok: false, message: "Invalid credentials" }); return;
