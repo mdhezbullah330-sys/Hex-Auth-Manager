@@ -208,7 +208,32 @@ const TeamMemberSchema = new Schema<ITeamMember>(
   { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
 );
 
+// ─── PendingRegistration ──────────────────────────────────────────────────────
+export interface IPendingRegistration extends Document {
+  _id: Types.ObjectId;
+  username: string;
+  email: string;
+  passwordHash: string;
+  code: string;
+  expiresAt: Date;
+  createdAt: Date;
+}
+
+const PendingRegistrationSchema = new Schema<IPendingRegistration>(
+  {
+    username: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    passwordHash: { type: String, required: true },
+    code: { type: String, required: true },
+    expiresAt: { type: Date, required: true, index: { expires: 0 } },
+  },
+  { timestamps: { createdAt: "createdAt", updatedAt: false } }
+);
+
 // ─── Exports ──────────────────────────────────────────────────────────────────
+export const PendingRegistration =
+  mongoose.models.PendingRegistration ||
+  mongoose.model<IPendingRegistration>("PendingRegistration", PendingRegistrationSchema);
 export const User = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
 export const App = mongoose.models.App || mongoose.model<IApp>("App", AppSchema);
 export const License = mongoose.models.License || mongoose.model<ILicense>("License", LicenseSchema);
