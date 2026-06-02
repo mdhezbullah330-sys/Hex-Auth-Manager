@@ -49,9 +49,9 @@ router.get("/settings/team", requireAuth, async (req: AuthRequest, res): Promise
   const enriched = await Promise.all(members.map(async (m) => {
     let username = m.email.split("@")[0];
     if (m.userId) { const u = await User.findById(m.userId).select("username"); if (u) username = u.username; }
-    return { id: m._id, username, email: m.email, role: m.role, isYou: m.userId?.toString() === req.userId, joinedAt: (m.joinedAt ?? m.createdAt).toISOString() };
+    return { id: m._id, username, email: m.email, role: m.role, status: m.status, isYou: m.userId?.toString() === req.userId, joinedAt: (m.joinedAt ?? m.createdAt).toISOString() };
   }));
-  res.json([{ id: owner._id, username: owner.username, email: owner.email, role: "owner", isYou: true, joinedAt: owner.createdAt.toISOString() }, ...enriched]);
+  res.json([{ id: owner._id, username: owner.username, email: owner.email, role: "owner", status: "accepted", isYou: true, joinedAt: owner.createdAt.toISOString() }, ...enriched]);
 });
 
 router.post("/settings/team/invite", requireAuth, async (req: AuthRequest, res): Promise<void> => {
@@ -76,13 +76,14 @@ router.delete("/settings/team/:userId", requireAuth, async (req: AuthRequest, re
 
 router.get("/settings/team/accept/:token", async (req, res): Promise<void> => {
   const params = AcceptTeamInviteParams.safeParse(req.params);
-  if (!params.success) { res.status(400).json({ error: "Invalid token" }); return; }
+  const frontendBase = process.env.REPLIT_DOMAINS?.split(",")[0] ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}` : "http://localhost";
+  if (!params.success) { res.redirect(`${frontendBase}/invite-accepted?error=invalid`); return; }
   const member = await TeamMember.findOne({ inviteToken: params.data.token });
-  if (!member) { res.status(404).json({ error: "Invitation not found" }); return; }
-  if (member.inviteExpiry && member.inviteExpiry < new Date()) { res.status(400).json({ error: "Invitation has expired" }); return; }
+  if (!member) { res.redirect(`${frontendBase}/invite-accepted?error=notfound`); return; }
+  if (member.inviteExpiry && member.inviteExpiry < new Date()) { res.redirect(`${frontendBase}/invite-accepted?error=expired`); return; }
   member.status = "accepted"; member.joinedAt = new Date(); member.inviteToken = null;
   await member.save();
-  res.json({ ok: true, message: "Invitation accepted. You can now log in." });
+  res.redirect(`${frontendBase}/invite-accepted?ok=1`);
 });
 
 router.get("/settings/credentials", requireAuth, async (req: AuthRequest, res): Promise<void> => {

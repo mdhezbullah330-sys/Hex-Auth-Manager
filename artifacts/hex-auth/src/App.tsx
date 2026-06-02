@@ -21,6 +21,7 @@ import BlacklistPage from "@/pages/blacklist";
 import EventLogsPage from "@/pages/event-logs";
 import SettingsPage from "@/pages/settings";
 import DocsPage from "@/pages/docs";
+import InviteAcceptedPage from "@/pages/invite-accepted";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -59,6 +60,7 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
       <Route path="/verify-email" component={VerifyEmailPage} />
+      <Route path="/invite-accepted" component={InviteAcceptedPage} />
       <Route path="/docs" component={DocsPage} />
       
       <Route path="/dashboard"><ProtectedRoute component={DashboardPage} /></Route>

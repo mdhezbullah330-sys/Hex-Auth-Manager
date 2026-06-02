@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRegister } from "@workspace/api-client-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AnimatedInput } from "@/components/ui/animated-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -29,13 +30,26 @@ export default function RegisterPage() {
   
   const registerMutation = useRegister();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   });
 
+  const passwordValue = useWatch({ control, name: "password", defaultValue: "" });
+  const confirmValue = useWatch({ control, name: "confirmPassword", defaultValue: "" });
+
+  const matchState: "idle" | "match" | "mismatch" =
+    confirmValue.length === 0 ? "idle"
+    : confirmValue.length > 0 && passwordValue.startsWith(confirmValue.slice(0, passwordValue.length)) && passwordValue === confirmValue ? "match"
+    : confirmValue.length > 0 && !passwordValue.startsWith(confirmValue) ? "mismatch"
+    : "idle";
+
+  const confirmBorderClass =
+    matchState === "match" ? "border-emerald-500 focus-visible:ring-emerald-500/50 bg-emerald-500/5"
+    : matchState === "mismatch" ? "border-red-500 focus-visible:ring-red-500/50 bg-red-500/5"
+    : errors.confirmPassword ? "border-destructive" : "";
+
   const onSubmit = (data: RegisterForm) => {
     const { confirmPassword, ...registerData } = data;
-    
     registerMutation.mutate(
       { data: registerData },
       {
@@ -81,10 +95,10 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
-                <Input 
-                  id="username" 
-                  placeholder="developer123" 
-                  {...register("username")} 
+                <AnimatedInput
+                  id="username"
+                  typedPlaceholder="developer123"
+                  {...register("username")}
                   className={errors.username ? "border-destructive" : ""}
                 />
                 {errors.username && <p className="text-xs text-destructive">{errors.username.message}</p>}
@@ -92,11 +106,11 @@ export default function RegisterPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
+                <AnimatedInput
+                  id="email"
                   type="email"
-                  placeholder="you@example.com" 
-                  {...register("email")} 
+                  typedPlaceholder="you@example.com"
+                  {...register("email")}
                   className={errors.email ? "border-destructive" : ""}
                 />
                 {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
@@ -104,26 +118,32 @@ export default function RegisterPage() {
               
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  {...register("password")} 
+                <AnimatedInput
+                  id="password"
+                  type="password"
+                  typedPlaceholder="••••••••"
+                  {...register("password")}
                   className={errors.password ? "border-destructive" : ""}
                 />
                 {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input 
-                  id="confirmPassword" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  {...register("confirmPassword")} 
-                  className={errors.confirmPassword ? "border-destructive" : ""}
+                <Label htmlFor="confirmPassword">
+                  Confirm Password
+                  {matchState === "match" && <span className="ml-2 text-xs text-emerald-500 font-medium">✓ Passwords match</span>}
+                  {matchState === "mismatch" && <span className="ml-2 text-xs text-red-500 font-medium">✗ Does not match</span>}
+                </Label>
+                <AnimatedInput
+                  id="confirmPassword"
+                  type="password"
+                  typedPlaceholder="••••••••"
+                  {...register("confirmPassword")}
+                  className={cn("transition-colors", confirmBorderClass)}
                 />
-                {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
+                {errors.confirmPassword && matchState === "idle" && (
+                  <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+                )}
               </div>
               
               <Button type="submit" className="w-full font-semibold" disabled={registerMutation.isPending}>

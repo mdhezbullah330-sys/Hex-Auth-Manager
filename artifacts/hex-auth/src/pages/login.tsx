@@ -7,7 +7,7 @@ import { useLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AnimatedInput } from "@/components/ui/animated-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -40,7 +40,7 @@ export default function LoginPage() {
             toast({ variant: "success", title: "Welcome back!", description: "Successfully signed in." });
             setLocation("/dashboard");
           } else if (res.requiresVerification) {
-            toast({ variant: "success", title: "Verification required", description: "Please verify your email." });
+            toast({ title: "Verification required", description: "Please verify your email." });
             setLocation("/verify-email");
           } else {
             toast({ variant: "destructive", title: "Login failed", description: res.message || "Invalid credentials." });
@@ -74,10 +74,10 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="identifier">Username or Email</Label>
-                <Input 
-                  id="identifier" 
-                  placeholder="admin" 
-                  {...register("identifier")} 
+                <AnimatedInput
+                  id="identifier"
+                  typedPlaceholder="admin"
+                  {...register("identifier")}
                   className={errors.identifier ? "border-destructive" : ""}
                   autoComplete="username"
                 />
@@ -85,14 +85,12 @@ export default function LoginPage() {
               </div>
               
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                </div>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  {...register("password")} 
+                <Label htmlFor="password">Password</Label>
+                <AnimatedInput
+                  id="password"
+                  type="password"
+                  typedPlaceholder="••••••••"
+                  {...register("password")}
                   className={errors.password ? "border-destructive" : ""}
                   autoComplete="current-password"
                 />

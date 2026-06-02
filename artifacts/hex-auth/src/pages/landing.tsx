@@ -658,7 +658,7 @@ export default function LandingPage() {
               <span className="text-primary"> software?</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-10">
-              Join developers who trust Hex Auth to secure their applications.
+              Join 2 developers who trust Hex Auth to secure their applications.
             </p>
             <Link href="/register">
               <Button size="lg" className="h-14 px-12 text-lg font-bold gap-2 shadow-xl shadow-primary/25">
