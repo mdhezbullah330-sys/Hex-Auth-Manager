@@ -216,18 +216,19 @@ router.post("/auth/resend-code", async (req, res): Promise<void> => {
     const code = generateCode();
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    try {
-      await sendVerificationEmail(email, code, pending.username);
-    } catch {
-      res.status(500).json({ error: "Failed to send verification email. Please try again." }); return;
-    }
-
-    // Update code only after email confirms sent
+    // Save new code first, then try email (non-blocking)
     pending.code = code;
     pending.expiresAt = expiresAt;
     await pending.save();
 
-    res.json({ ok: true, message: "Verification code resent" });
+    let emailSent = true;
+    try {
+      await sendVerificationEmail(email, code, pending.username);
+    } catch {
+      emailSent = false;
+    }
+
+    res.json({ ok: true, emailSent, message: emailSent ? "Verification code resent" : "Code updated. Email could not be sent — check server logs." });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     res.status(500).json({ error: `Failed to resend: ${message}` });
