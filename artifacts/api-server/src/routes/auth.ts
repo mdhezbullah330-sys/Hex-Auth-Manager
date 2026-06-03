@@ -45,19 +45,20 @@ router.post("/auth/register", async (req, res): Promise<void> => {
       existing.expiresAt = expiresAt;
       await existing.save();
 
+      let emailSent = true;
       try {
         await sendVerificationEmail(email, code, existing.username);
       } catch {
-        // Email failed — delete pending so user can try again
-        await PendingRegistration.deleteOne({ email });
-        res.status(500).json({ error: "Failed to send verification email. Please try again." });
-        return;
+        emailSent = false;
       }
 
       res.status(201).json({
         ok: true,
         requiresVerification: true,
-        message: "A new verification code has been sent to your email.",
+        emailSent,
+        message: emailSent
+          ? "A new verification code has been sent to your email."
+          : "Code updated. Email could not be sent — please use 'Resend code' on the verify page.",
       });
       return;
     }
@@ -71,23 +72,24 @@ router.post("/auth/register", async (req, res): Promise<void> => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Try sending email BEFORE saving anything to DB
+    // Save to DB first — email is best-effort
     const pending = new PendingRegistration({ username, email, passwordHash, code, expiresAt });
+    await pending.save();
 
+    let emailSent = true;
     try {
       await sendVerificationEmail(email, code, username);
     } catch {
-      res.status(500).json({ error: "Failed to send verification email. Please check your email address and try again." });
-      return;
+      emailSent = false;
     }
-
-    // Email sent successfully — now save to pending collection
-    await pending.save();
 
     res.status(201).json({
       ok: true,
       requiresVerification: true,
-      message: "Verification code sent to your email. Please check your inbox.",
+      emailSent,
+      message: emailSent
+        ? "Verification code sent to your email. Please check your inbox."
+        : "Account created. Email could not be sent — please use 'Resend code' on the verify page.",
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
