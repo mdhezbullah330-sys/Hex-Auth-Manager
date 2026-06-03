@@ -53,12 +53,29 @@ function ProtectedRoute({ component: Component }: { component: React.ElementType
   );
 }
 
+// Redirects logged-in users away from public-only pages (landing, login, register)
+function PublicRoute({ component: Component }: { component: React.ElementType }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  React.useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      setLocation("/dashboard");
+    }
+  }, [isLoading, isAuthenticated, setLocation]);
+
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" /></div>;
+  if (isAuthenticated) return null;
+
+  return <Component />;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={LandingPage} />
-      <Route path="/login" component={LoginPage} />
-      <Route path="/register" component={RegisterPage} />
+      <Route path="/">{() => <PublicRoute component={LandingPage} />}</Route>
+      <Route path="/login">{() => <PublicRoute component={LoginPage} />}</Route>
+      <Route path="/register">{() => <PublicRoute component={RegisterPage} />}</Route>
       <Route path="/verify-email" component={VerifyEmailPage} />
       <Route path="/invite-accepted" component={InviteAcceptedPage} />
       <Route path="/docs" component={DocsPage} />

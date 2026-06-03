@@ -177,7 +177,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     logoutMutation.mutate(undefined, {
       onSettled: () => {
         logout();
-        setLocation("/login");
+        setLocation("/");
       }
     });
   };
