@@ -3,12 +3,13 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LayoutDashboard, 
-  Box, 
-  Users, 
-  Key, 
+import {
+  LayoutDashboard,
+  Box,
+  Users,
+  Key,
   KeyRound,
   CreditCard,
   Activity,
@@ -20,9 +21,14 @@ import {
   BookOpen,
   LogOut,
   Menu,
-  X
+  X,
+  ChevronDown,
+  Crown,
+  Shield,
+  Eye,
+  Check,
 } from "lucide-react";
-import { useLogout } from "@workspace/api-client-react";
+import { useLogout, useGetMyTeams, getGetMyTeamsQueryKey, type MyTeam } from "@workspace/api-client-react";
 
 interface SidebarGroup {
   label: string;
@@ -99,7 +105,6 @@ function NavItem({
           }
         `}
       >
-        {/* Active left bar */}
         <span
           className={`
             absolute left-0 top-1/2 -translate-y-1/2 w-0.5 rounded-r-full bg-primary
@@ -107,8 +112,6 @@ function NavItem({
             ${isActive ? "h-5 opacity-100" : "h-0 opacity-0"}
           `}
         />
-
-        {/* Click ripple */}
         <AnimatePresence>
           {clicked && (
             <motion.span
@@ -121,8 +124,6 @@ function NavItem({
             />
           )}
         </AnimatePresence>
-
-        {/* Animated icon */}
         <motion.span
           className="shrink-0"
           animate={
@@ -149,11 +150,7 @@ function NavItem({
             `}
           />
         </motion.span>
-
-        {/* Label */}
         <span className="truncate leading-none">{item.label}</span>
-
-        {/* Active glow dot */}
         {isActive && (
           <motion.span
             className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shrink-0"
@@ -166,9 +163,84 @@ function NavItem({
   );
 }
 
+function WorkspaceSwitcher() {
+  const { user, selectedProject, selectProject } = useAuth();
+  const [, setLocation] = useLocation();
+  const { data: teams } = useGetMyTeams({ query: { queryKey: getGetMyTeamsQueryKey() } });
+
+  const hasTeams = teams && teams.length > 0;
+  const currentName = selectedProject ? selectedProject.ownerUsername : user?.username ?? "";
+
+  if (!hasTeams) {
+    return (
+      <div className="mx-3 mb-3 px-3 py-2.5 rounded-lg bg-sidebar-accent/40 border border-sidebar-border">
+        <p className="text-[9px] font-bold text-sidebar-foreground/40 uppercase tracking-widest mb-0.5">Workspace</p>
+        <p className="text-sm font-semibold text-sidebar-foreground truncate">{currentName}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-3 mb-3">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="w-full px-3 py-2.5 rounded-lg bg-sidebar-accent/40 border border-sidebar-border hover:border-primary/40 hover:bg-sidebar-accent/70 transition-all flex items-center justify-between gap-2 group">
+            <div className="overflow-hidden text-left">
+              <p className="text-[9px] font-bold text-sidebar-foreground/40 uppercase tracking-widest mb-0.5">Workspace</p>
+              <p className="text-sm font-semibold text-sidebar-foreground truncate">{currentName}</p>
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-sidebar-foreground/40 group-hover:text-sidebar-foreground/70 shrink-0 transition-colors" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-56">
+          <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+            Switch Workspace
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => { selectProject(null); setLocation("/dashboard"); }}
+            className="gap-2 cursor-pointer"
+          >
+            <div className="w-6 h-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
+              <Crown className="w-3 h-3 text-primary" />
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <p className="text-sm font-medium truncate">{user?.username}</p>
+              <p className="text-[10px] text-muted-foreground">Your workspace</p>
+            </div>
+            {!selectedProject && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+          </DropdownMenuItem>
+          {teams && teams.length > 0 && <DropdownMenuSeparator />}
+          {teams?.map((t: MyTeam) => {
+            const isSelected = selectedProject?.ownerId === t.ownerId;
+            return (
+              <DropdownMenuItem
+                key={t.ownerId}
+                onClick={() => { selectProject({ ownerId: t.ownerId, ownerUsername: t.ownerUsername }); setLocation("/dashboard"); }}
+                className="gap-2 cursor-pointer"
+              >
+                <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center shrink-0">
+                  {t.role === "admin"
+                    ? <Shield className="w-3 h-3 text-blue-400" />
+                    : <Eye className="w-3 h-3 text-muted-foreground" />}
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-sm font-medium truncate">{t.ownerUsername}</p>
+                  <p className="text-[10px] text-muted-foreground capitalize">{t.role}</p>
+                </div>
+                {isSelected && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { user, logout, selectedProject, selectProject } = useAuth();
+  const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
   const logoutMutation = useLogout();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -193,6 +265,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <X className="w-5 h-5" />
         </button>
       </div>
+
+      <WorkspaceSwitcher />
 
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-5 scrollbar-none">
         {navigation.map((group) => (
@@ -219,21 +293,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         ))}
       </div>
 
-      {/* Selected project indicator */}
-      {selectedProject && (
-        <div className="mx-3 mb-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
-          <p className="text-[10px] text-primary/70 uppercase tracking-wider font-bold mb-0.5">Viewing workspace</p>
-          <p className="text-xs font-semibold text-primary truncate">{selectedProject.ownerUsername}</p>
-          <button
-            className="text-[10px] text-muted-foreground hover:text-foreground underline mt-0.5"
-            onClick={() => { selectProject(null); setLocation("/select-project"); }}
-          >
-            Switch project
-          </button>
-        </div>
-      )}
-
-      {/* User Footer */}
       <div className="p-4 border-t border-sidebar-border">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 overflow-hidden">
@@ -263,7 +322,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen w-full bg-background overflow-hidden text-foreground selection:bg-primary/30">
-      {/* Mobile Header */}
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 border-b border-border bg-card/95 backdrop-blur-sm flex items-center justify-between px-4 z-50">
         <Logo size="sm" />
         <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
@@ -271,12 +329,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </Button>
       </div>
 
-      {/* Desktop Sidebar */}
       <aside className="hidden md:flex fixed top-0 left-0 z-40 h-screen w-60 bg-sidebar border-r border-sidebar-border flex-col">
         <SidebarContent />
       </aside>
 
-      {/* Mobile Sidebar Drawer */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -302,7 +358,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 md:ml-60 pt-14 md:pt-0">
         <div className="flex-1 overflow-auto p-4 md:p-8">
           <div className="mx-auto max-w-6xl">

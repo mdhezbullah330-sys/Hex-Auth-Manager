@@ -120,6 +120,22 @@ router.post("/users/:id/reset-hwid", requireAuth, async (req: AuthRequest, res):
   res.json(formatAppUser(user));
 });
 
+router.patch("/users/:id", requireAuth, async (req: AuthRequest, res): Promise<void> => {
+  const { plan, expiresAt, bypassHwid, maxConcurrentSessions } = req.body;
+  const update: Record<string, unknown> = {};
+  if (plan !== undefined) update.plan = plan;
+  if (expiresAt !== undefined) update.subscriptionExpiry = expiresAt ? new Date(expiresAt) : null;
+  if (bypassHwid !== undefined) update.bypassHwid = Boolean(bypassHwid);
+  if (maxConcurrentSessions !== undefined) update.maxConcurrentSessions = parseInt(String(maxConcurrentSessions));
+  const user = await AppUser.findOneAndUpdate(
+    { _id: req.params.id, ownerId: new Types.ObjectId(req.userId) },
+    update,
+    { new: true }
+  );
+  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+  res.json(formatAppUser(user));
+});
+
 router.patch("/users/:id/plan", requireAuth, async (req: AuthRequest, res): Promise<void> => {
   const body = UpdateUserPlanBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
