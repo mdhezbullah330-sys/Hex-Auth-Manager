@@ -19,8 +19,7 @@ export async function sendVerificationEmail(
   code: string,
   username: string = "there"
 ): Promise<void> {
-  const smtpUser = process.env.SMTP_USER;
-  const from = process.env.SMTP_FROM ?? (smtpUser ? `Hex Auth <${smtpUser}>` : "Hex Auth <noreply@benjahexauth.qzz.io>");
+  const from = process.env.SMTP_FROM ?? "Hex Auth <noreply@benjahexauth.qzz.io>";
 
   if (!process.env.SMTP_PASS) {
     logger.info({ email, code }, "Email verification code (SMTP not configured)");
@@ -192,8 +191,7 @@ export async function sendTeamInviteEmail(
   role: string,
   acceptLink: string
 ): Promise<void> {
-  const smtpUser = process.env.SMTP_USER;
-  const from = process.env.SMTP_FROM ?? (smtpUser ? `Hex Auth <${smtpUser}>` : "Hex Auth <noreply@benjahexauth.qzz.io>");
+  const from = process.env.SMTP_FROM ?? "Hex Auth <noreply@benjahexauth.qzz.io>";
 
   if (!process.env.SMTP_PASS) {
     logger.info({ email, acceptLink }, "Team invite email (SMTP not configured)");
