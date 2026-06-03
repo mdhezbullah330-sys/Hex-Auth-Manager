@@ -178,12 +178,22 @@ export async function sendVerificationEmail(
 </body>
 </html>`;
 
-  const subject = `${code} — Your Hex Auth Verification Code`;
+  const subject = `Your Hex Auth verification code: ${code}`;
+
+  const text = `Hi ${username},
+
+Your Hex Auth email verification code is: ${code}
+
+This code expires in 15 minutes. Do not share it with anyone.
+
+If you did not create a Hex Auth account, you can safely ignore this email.
+
+-- Hex Auth`;
 
   try {
     const transporter = createTransporter();
     await transporter.verify();
-    const info = await transporter.sendMail({ from, to: email, subject, html });
+    const info = await transporter.sendMail({ from, to: email, subject, text, html });
     logger.info({ email, messageId: info.messageId, response: info.response }, "Verification email sent via Brevo");
   } catch (err: any) {
     logger.error({ err: err?.message ?? err, code: (err as any)?.code }, "Failed to send verification email");
@@ -360,6 +370,18 @@ export async function sendTeamInviteEmail(
 </body>
 </html>`;
 
+  const text = `Hi,
+
+${inviterUsername} has invited you to join their Hex Auth workspace as ${roleLabel}.
+
+Accept the invitation here: ${acceptLink}
+
+This invitation expires in 48 hours. You need a Hex Auth account to accept — register at ${acceptLink.split("/api/")[0]}/register if you do not have one.
+
+If you were not expecting this invitation, you can safely ignore this email.
+
+-- Hex Auth`;
+
   try {
     const transporter = createTransporter();
     await transporter.verify();
@@ -367,6 +389,7 @@ export async function sendTeamInviteEmail(
       from,
       to: email,
       subject: `${inviterUsername} invited you to join their Hex Auth team`,
+      text,
       html,
     });
     logger.info({ email, messageId: info.messageId, response: info.response }, "Team invite email sent via Brevo");
