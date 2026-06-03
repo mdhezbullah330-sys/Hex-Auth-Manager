@@ -122,7 +122,7 @@ export default function LoginPage() {
                 <Label htmlFor="identifier">Username or Email</Label>
                 <AnimatedInput
                   id="identifier"
-                  typedPlaceholder="admin"
+                  typedPlaceholder="Enter your username or email"
                   {...register("identifier")}
                   className={errors.identifier ? "border-destructive focus-visible:ring-destructive/30" : ""}
                   autoComplete="username"
@@ -135,7 +135,7 @@ export default function LoginPage() {
                 <AnimatedInput
                   id="password"
                   type="password"
-                  typedPlaceholder="••••••••"
+                  typedPlaceholder="Enter your password"
                   {...register("password")}
                   className={errors.password ? "border-destructive focus-visible:ring-destructive/30" : ""}
                   autoComplete="current-password"

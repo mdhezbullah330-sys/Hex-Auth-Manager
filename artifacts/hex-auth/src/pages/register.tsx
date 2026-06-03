@@ -121,7 +121,7 @@ export default function RegisterPage() {
                 <Label htmlFor="username">Username</Label>
                 <AnimatedInput
                   id="username"
-                  typedPlaceholder="developer123"
+                  typedPlaceholder="Enter your username"
                   {...register("username")}
                   className={errors.username ? "border-destructive focus-visible:ring-destructive/30" : ""}
                 />
@@ -133,7 +133,7 @@ export default function RegisterPage() {
                 <AnimatedInput
                   id="email"
                   type="email"
-                  typedPlaceholder="you@example.com"
+                  typedPlaceholder="Enter your email"
                   {...register("email")}
                   className={errors.email ? "border-destructive focus-visible:ring-destructive/30" : ""}
                 />
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                 <AnimatedInput
                   id="password"
                   type="password"
-                  typedPlaceholder="••••••••"
+                  typedPlaceholder="Enter your password"
                   {...register("password")}
                   className={errors.password ? "border-destructive focus-visible:ring-destructive/30" : ""}
                 />
@@ -183,7 +183,7 @@ export default function RegisterPage() {
                 <AnimatedInput
                   id="confirmPassword"
                   type="password"
-                  typedPlaceholder="••••••••"
+                  typedPlaceholder="Confirm your password"
                   {...register("confirmPassword")}
                   className={cn("transition-colors", confirmBorderClass)}
                 />

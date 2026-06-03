@@ -7,9 +7,13 @@ function createTransporter() {
     host: process.env.SMTP_HOST ?? "smtp-relay.brevo.com",
     port,
     secure: port === 465,
+    requireTLS: port !== 465,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 }
@@ -178,10 +182,12 @@ export async function sendVerificationEmail(
 
   try {
     const transporter = createTransporter();
-    await transporter.sendMail({ from, to: email, subject, html });
-    logger.info({ email }, "Verification email sent via Brevo");
+    await transporter.verify();
+    const info = await transporter.sendMail({ from, to: email, subject, html });
+    logger.info({ email, messageId: info.messageId, response: info.response }, "Verification email sent via Brevo");
   } catch (err: any) {
-    logger.error({ err: err?.message ?? err }, "Failed to send verification email");
+    logger.error({ err: err?.message ?? err, code: (err as any)?.code }, "Failed to send verification email");
+    throw err;
   }
 }
 
@@ -356,14 +362,16 @@ export async function sendTeamInviteEmail(
 
   try {
     const transporter = createTransporter();
-    await transporter.sendMail({
+    await transporter.verify();
+    const info = await transporter.sendMail({
       from,
       to: email,
       subject: `${inviterUsername} invited you to join their Hex Auth team`,
       html,
     });
-    logger.info({ email }, "Team invite email sent via Brevo");
+    logger.info({ email, messageId: info.messageId, response: info.response }, "Team invite email sent via Brevo");
   } catch (err: any) {
-    logger.error({ err: err?.message ?? err }, "Failed to send team invite email");
+    logger.error({ err: err?.message ?? err, code: (err as any)?.code }, "Failed to send team invite email");
+    throw err;
   }
 }
