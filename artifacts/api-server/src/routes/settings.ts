@@ -81,7 +81,17 @@ router.get("/settings/team/accept/:token", async (req, res): Promise<void> => {
   const member = await TeamMember.findOne({ inviteToken: params.data.token });
   if (!member) { res.redirect(`${frontendBase}/invite-accepted?error=notfound`); return; }
   if (member.inviteExpiry && member.inviteExpiry < new Date()) { res.redirect(`${frontendBase}/invite-accepted?error=expired`); return; }
-  member.status = "accepted"; member.joinedAt = new Date(); member.inviteToken = null;
+  // Check if the invited email has an existing account
+  const existingUser = await User.findOne({ email: member.email });
+  if (!existingUser) {
+    // No account — send them to register first, preserving the token
+    res.redirect(`${frontendBase}/invite-signup?token=${params.data.token}`);
+    return;
+  }
+  member.status = "accepted";
+  member.joinedAt = new Date();
+  member.inviteToken = null;
+  member.userId = existingUser._id as Types.ObjectId;
   await member.save();
   res.redirect(`${frontendBase}/invite-accepted?ok=1`);
 });

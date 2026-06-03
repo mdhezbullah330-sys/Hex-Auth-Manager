@@ -16,5 +16,15 @@ export interface ManagedUser {
   hwid: string | null;
   /** @nullable */
   subscriptionExpiry?: string | null;
+  /** @nullable */
+  token?: string | null;
+  /** @nullable */
+  bypassHwid?: boolean | null;
+  /** @nullable */
+  maxConcurrentSessions?: number | null;
+  /** @nullable */
+  lastLoginAt?: string | null;
+  /** @nullable */
+  appId?: string | null;
   createdAt: string;
 }

@@ -115,6 +115,19 @@ export const GetMeResponse = zod.object({
 
 
 /**
+ * @summary Get teams the current user belongs to as a member
+ */
+export const GetMyTeamsResponseItem = zod.object({
+  "ownerId": zod.string(),
+  "ownerUsername": zod.string(),
+  "ownerEmail": zod.string().optional(),
+  "role": zod.string(),
+  "joinedAt": zod.string()
+})
+export const GetMyTeamsResponse = zod.array(GetMyTeamsResponseItem)
+
+
+/**
  * @summary List all applications
  */
 export const GetAppsResponseItem = zod.object({
@@ -220,8 +233,12 @@ export const RotateAppTokenResponse = zod.object({
 
 
 /**
- * @summary List all users
+ * @summary List all app users (SDK users)
  */
+export const GetUsersQueryParams = zod.object({
+  "appId": zod.coerce.string().optional()
+})
+
 export const GetUsersResponseItem = zod.object({
   "id": zod.number(),
   "username": zod.string(),
@@ -230,13 +247,39 @@ export const GetUsersResponseItem = zod.object({
   "status": zod.string(),
   "hwid": zod.string().nullable(),
   "subscriptionExpiry": zod.string().nullish(),
+  "token": zod.string().nullish(),
+  "bypassHwid": zod.boolean().nullish(),
+  "maxConcurrentSessions": zod.number().nullish(),
+  "lastLoginAt": zod.string().nullish(),
+  "appId": zod.string().nullish(),
   "createdAt": zod.string()
 })
 export const GetUsersResponse = zod.array(GetUsersResponseItem)
 
 
 /**
- * @summary Get a specific user
+ * @summary Create an app user (SDK user)
+ */
+export const createAppUserBodyUsernameMin = 3;
+
+export const createAppUserBodyPasswordMin = 6;
+
+
+
+export const CreateAppUserBody = zod.object({
+  "username": zod.string().min(createAppUserBodyUsernameMin),
+  "email": zod.string().optional(),
+  "password": zod.string().min(createAppUserBodyPasswordMin),
+  "plan": zod.string(),
+  "expiresAt": zod.string().nullish(),
+  "bypassHwid": zod.boolean().optional(),
+  "maxConcurrentSessions": zod.number().optional(),
+  "appId": zod.string().nullish()
+})
+
+
+/**
+ * @summary Get a specific app user
  */
 export const GetUserParams = zod.object({
   "id": zod.coerce.number()
@@ -250,6 +293,48 @@ export const GetUserResponse = zod.object({
   "status": zod.string(),
   "hwid": zod.string().nullable(),
   "subscriptionExpiry": zod.string().nullish(),
+  "token": zod.string().nullish(),
+  "bypassHwid": zod.boolean().nullish(),
+  "maxConcurrentSessions": zod.number().nullish(),
+  "lastLoginAt": zod.string().nullish(),
+  "appId": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Delete an app user
+ */
+export const DeleteAppUserParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const DeleteAppUserResponse = zod.object({
+  "ok": zod.boolean(),
+  "message": zod.string().nullish()
+})
+
+
+/**
+ * @summary Rotate an app user's API token
+ */
+export const RotateUserTokenParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const RotateUserTokenResponse = zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "email": zod.string(),
+  "plan": zod.string(),
+  "status": zod.string(),
+  "hwid": zod.string().nullable(),
+  "subscriptionExpiry": zod.string().nullish(),
+  "token": zod.string().nullish(),
+  "bypassHwid": zod.boolean().nullish(),
+  "maxConcurrentSessions": zod.number().nullish(),
+  "lastLoginAt": zod.string().nullish(),
+  "appId": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -269,6 +354,11 @@ export const BanUserResponse = zod.object({
   "status": zod.string(),
   "hwid": zod.string().nullable(),
   "subscriptionExpiry": zod.string().nullish(),
+  "token": zod.string().nullish(),
+  "bypassHwid": zod.boolean().nullish(),
+  "maxConcurrentSessions": zod.number().nullish(),
+  "lastLoginAt": zod.string().nullish(),
+  "appId": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -288,6 +378,11 @@ export const UnbanUserResponse = zod.object({
   "status": zod.string(),
   "hwid": zod.string().nullable(),
   "subscriptionExpiry": zod.string().nullish(),
+  "token": zod.string().nullish(),
+  "bypassHwid": zod.boolean().nullish(),
+  "maxConcurrentSessions": zod.number().nullish(),
+  "lastLoginAt": zod.string().nullish(),
+  "appId": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -307,6 +402,11 @@ export const ResetUserHwidResponse = zod.object({
   "status": zod.string(),
   "hwid": zod.string().nullable(),
   "subscriptionExpiry": zod.string().nullish(),
+  "token": zod.string().nullish(),
+  "bypassHwid": zod.boolean().nullish(),
+  "maxConcurrentSessions": zod.number().nullish(),
+  "lastLoginAt": zod.string().nullish(),
+  "appId": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -330,6 +430,11 @@ export const UpdateUserPlanResponse = zod.object({
   "status": zod.string(),
   "hwid": zod.string().nullable(),
   "subscriptionExpiry": zod.string().nullish(),
+  "token": zod.string().nullish(),
+  "bypassHwid": zod.boolean().nullish(),
+  "maxConcurrentSessions": zod.number().nullish(),
+  "lastLoginAt": zod.string().nullish(),
+  "appId": zod.string().nullish(),
   "createdAt": zod.string()
 })
 
@@ -353,6 +458,11 @@ export const UpdateUserSubscriptionResponse = zod.object({
   "status": zod.string(),
   "hwid": zod.string().nullable(),
   "subscriptionExpiry": zod.string().nullish(),
+  "token": zod.string().nullish(),
+  "bypassHwid": zod.boolean().nullish(),
+  "maxConcurrentSessions": zod.number().nullish(),
+  "lastLoginAt": zod.string().nullish(),
+  "appId": zod.string().nullish(),
   "createdAt": zod.string()
 })
 

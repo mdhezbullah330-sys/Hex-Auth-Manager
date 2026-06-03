@@ -22,6 +22,8 @@ import EventLogsPage from "@/pages/event-logs";
 import SettingsPage from "@/pages/settings";
 import DocsPage from "@/pages/docs";
 import InviteAcceptedPage from "@/pages/invite-accepted";
+import InviteSignupPage from "@/pages/invite-signup";
+import SelectProjectPage from "@/pages/select-project";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -33,6 +35,12 @@ const queryClient = new QueryClient({
   },
 });
 
+const Spinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+  </div>
+);
+
 function ProtectedRoute({ component: Component }: { component: React.ElementType }) {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
@@ -43,7 +51,7 @@ function ProtectedRoute({ component: Component }: { component: React.ElementType
     }
   }, [isLoading, isAuthenticated, setLocation]);
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" /></div>;
+  if (isLoading) return <Spinner />;
   if (!isAuthenticated) return null;
 
   return (
@@ -51,6 +59,23 @@ function ProtectedRoute({ component: Component }: { component: React.ElementType
       <Component />
     </DashboardLayout>
   );
+}
+
+// Auth-required page but without the dashboard layout (e.g. select-project)
+function AuthOnlyRoute({ component: Component }: { component: React.ElementType }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  React.useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isLoading, isAuthenticated, setLocation]);
+
+  if (isLoading) return <Spinner />;
+  if (!isAuthenticated) return null;
+
+  return <Component />;
 }
 
 // Redirects logged-in users away from public-only pages (landing, login, register)
@@ -64,7 +89,7 @@ function PublicRoute({ component: Component }: { component: React.ElementType })
     }
   }, [isLoading, isAuthenticated, setLocation]);
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" /></div>;
+  if (isLoading) return <Spinner />;
   if (isAuthenticated) return null;
 
   return <Component />;
@@ -78,8 +103,11 @@ function Router() {
       <Route path="/register">{() => <PublicRoute component={RegisterPage} />}</Route>
       <Route path="/verify-email" component={VerifyEmailPage} />
       <Route path="/invite-accepted" component={InviteAcceptedPage} />
+      <Route path="/invite-signup" component={InviteSignupPage} />
       <Route path="/docs" component={DocsPage} />
-      
+
+      <Route path="/select-project">{() => <AuthOnlyRoute component={SelectProjectPage} />}</Route>
+
       <Route path="/dashboard"><ProtectedRoute component={DashboardPage} /></Route>
       <Route path="/apps"><ProtectedRoute component={AppsPage} /></Route>
       <Route path="/users"><ProtectedRoute component={UsersPage} /></Route>

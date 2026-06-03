@@ -98,7 +98,40 @@ export interface ManagedUser {
   hwid: string | null;
   /** @nullable */
   subscriptionExpiry?: string | null;
+  /** @nullable */
+  token?: string | null;
+  /** @nullable */
+  bypassHwid?: boolean | null;
+  /** @nullable */
+  maxConcurrentSessions?: number | null;
+  /** @nullable */
+  lastLoginAt?: string | null;
+  /** @nullable */
+  appId?: string | null;
   createdAt: string;
+}
+
+export interface CreateAppUserInput {
+  /** @minLength 3 */
+  username: string;
+  email?: string;
+  /** @minLength 6 */
+  password: string;
+  plan: string;
+  /** @nullable */
+  expiresAt?: string | null;
+  bypassHwid?: boolean;
+  maxConcurrentSessions?: number;
+  /** @nullable */
+  appId?: string | null;
+}
+
+export interface MyTeam {
+  ownerId: string;
+  ownerUsername: string;
+  ownerEmail?: string;
+  role: string;
+  joinedAt: string;
 }
 
 export interface UserPlanUpdate {
@@ -290,6 +323,10 @@ export interface SdkVariable {
   name: string;
   value: string;
 }
+
+export type GetUsersParams = {
+appId?: string;
+};
 
 export type GetLogsParams = {
 filter?: GetLogsFilter;

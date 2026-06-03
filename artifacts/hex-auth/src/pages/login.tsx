@@ -58,10 +58,25 @@ export default function LoginPage() {
     loginMutation.mutate(
       { data },
       {
-        onSuccess: (res) => {
+        onSuccess: async (res) => {
           if (res.ok && res.token && res.user) {
             login(res.token, res.user);
             toast({ variant: "success", title: "Welcome back!", description: "Successfully signed in." });
+            // Check if user belongs to any teams — if so, show project selector
+            try {
+              const teamsRes = await fetch("/api/auth/my-teams", {
+                headers: { Authorization: `Bearer ${res.token}` },
+              });
+              if (teamsRes.ok) {
+                const teams = await teamsRes.json();
+                if (Array.isArray(teams) && teams.length > 0) {
+                  setLocation("/select-project");
+                  return;
+                }
+              }
+            } catch {
+              // Ignore — just go to dashboard
+            }
             setLocation("/dashboard");
           } else {
             toast({ variant: "destructive", title: "Login failed", description: res.message || "Invalid credentials." });

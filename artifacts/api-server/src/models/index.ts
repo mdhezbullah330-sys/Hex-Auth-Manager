@@ -230,7 +230,46 @@ const PendingRegistrationSchema = new Schema<IPendingRegistration>(
   { timestamps: { createdAt: "createdAt", updatedAt: false } }
 );
 
+// ─── AppUser (SDK / end-user of protected applications) ───────────────────────
+export interface IAppUser extends Document {
+  _id: Types.ObjectId;
+  ownerId: Types.ObjectId;
+  appId: Types.ObjectId | null;
+  username: string;
+  email: string;
+  passwordHash: string;
+  plan: string;
+  status: string;
+  hwid: string | null;
+  bypassHwid: boolean;
+  maxConcurrentSessions: number;
+  token: string;
+  subscriptionExpiry: Date | null;
+  lastLoginAt: Date | null;
+  createdAt: Date;
+}
+
+const AppUserSchema = new Schema<IAppUser>(
+  {
+    ownerId: { type: Schema.Types.ObjectId, required: true },
+    appId: { type: Schema.Types.ObjectId, default: null },
+    username: { type: String, required: true },
+    email: { type: String, default: "" },
+    passwordHash: { type: String, required: true },
+    plan: { type: String, default: "free" },
+    status: { type: String, default: "active" },
+    hwid: { type: String, default: null },
+    bypassHwid: { type: Boolean, default: false },
+    maxConcurrentSessions: { type: Number, default: 1 },
+    token: { type: String, required: true, unique: true },
+    subscriptionExpiry: { type: Date, default: null },
+    lastLoginAt: { type: Date, default: null },
+  },
+  { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
+);
+
 // ─── Exports ──────────────────────────────────────────────────────────────────
+export const AppUser = mongoose.models.AppUser || mongoose.model<IAppUser>("AppUser", AppUserSchema);
 export const PendingRegistration =
   mongoose.models.PendingRegistration ||
   mongoose.model<IPendingRegistration>("PendingRegistration", PendingRegistrationSchema);

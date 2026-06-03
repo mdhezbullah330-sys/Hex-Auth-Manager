@@ -255,4 +255,23 @@ router.get("/auth/me", requireAuth, async (req: AuthRequest, res): Promise<void>
   res.json({ id: user._id, username: user.username, email: user.email, plan: user.plan, status: user.status, role: user.role, emailVerified: user.emailVerified, subscriptionExpiry: user.subscriptionExpiry?.toISOString() ?? null, webhookUrl: user.webhookUrl, createdAt: user.createdAt.toISOString() });
 });
 
+// ── My Teams ──────────────────────────────────────────────────────────────────
+// Returns workspaces the logged-in user is a member of (not their own)
+router.get("/auth/my-teams", requireAuth, async (req: AuthRequest, res): Promise<void> => {
+  const { TeamMember } = await import("../models");
+  const memberships = await TeamMember.find({ userId: new (await import("mongoose")).Types.ObjectId(req.userId), status: "accepted" });
+  const result = await Promise.all(memberships.map(async (m) => {
+    const owner = await User.findById(m.ownerId).select("username email");
+    if (!owner) return null;
+    return {
+      ownerId: owner._id.toString(),
+      ownerUsername: owner.username,
+      ownerEmail: owner.email,
+      role: m.role,
+      joinedAt: (m.joinedAt ?? m.createdAt).toISOString(),
+    };
+  }));
+  res.json(result.filter(Boolean));
+});
+
 export default router;

@@ -168,7 +168,7 @@ function NavItem({
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, selectedProject, selectProject } = useAuth();
   const [, setLocation] = useLocation();
   const logoutMutation = useLogout();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -218,6 +218,20 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
         ))}
       </div>
+
+      {/* Selected project indicator */}
+      {selectedProject && (
+        <div className="mx-3 mb-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
+          <p className="text-[10px] text-primary/70 uppercase tracking-wider font-bold mb-0.5">Viewing workspace</p>
+          <p className="text-xs font-semibold text-primary truncate">{selectedProject.ownerUsername}</p>
+          <button
+            className="text-[10px] text-muted-foreground hover:text-foreground underline mt-0.5"
+            onClick={() => { selectProject(null); setLocation("/select-project"); }}
+          >
+            Switch project
+          </button>
+        </div>
+      )}
 
       {/* User Footer */}
       <div className="p-4 border-t border-sidebar-border">
