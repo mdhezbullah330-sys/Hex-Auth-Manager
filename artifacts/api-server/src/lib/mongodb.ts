@@ -6,7 +6,7 @@ let connected = false;
 export async function connectMongo(): Promise<void> {
   if (connected) return;
 
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI ?? process.env.MONGODB_URL;
   if (!uri) {
     throw new Error("MONGODB_URI environment variable is required but was not provided.");
   }
