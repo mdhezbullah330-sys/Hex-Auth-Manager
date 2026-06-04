@@ -6,6 +6,7 @@ const JWT_SECRET = process.env.SESSION_SECRET!;
 export interface AuthRequest extends Request {
   userId?: string;
   userRole?: string;
+  workspaceId?: string;
 }
 
 export function requireAuth(req: AuthRequest, res: Response, next: NextFunction): void {
@@ -20,7 +21,33 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
     const payload = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
     req.userId = payload.userId;
     req.userRole = payload.role;
-    next();
+
+    const requestedWorkspaceId = req.headers["x-workspace-id"] as string | undefined;
+
+    if (!requestedWorkspaceId || requestedWorkspaceId === payload.userId) {
+      req.workspaceId = payload.userId;
+      next();
+      return;
+    }
+
+    import("../models").then(({ TeamMember }) => {
+      import("mongoose").then(({ Types }) => {
+        TeamMember.findOne({
+          ownerId: new Types.ObjectId(requestedWorkspaceId),
+          userId: new Types.ObjectId(payload.userId),
+          status: "accepted",
+        }).then((membership) => {
+          if (!membership) {
+            res.status(403).json({ error: "Access denied to this workspace" });
+            return;
+          }
+          req.workspaceId = requestedWorkspaceId;
+          next();
+        }).catch(() => {
+          res.status(500).json({ error: "Failed to verify workspace access" });
+        });
+      });
+    });
   } catch {
     res.status(401).json({ error: "Invalid or expired token" });
   }

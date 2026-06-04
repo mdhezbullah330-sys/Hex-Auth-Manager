@@ -17,6 +17,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _workspaceIdGetter: (() => string | null) | null = null;
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -42,6 +43,15 @@ export function setBaseUrl(url: string | null): void {
  */
 export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
+}
+
+/**
+ * Register a getter that supplies the active workspace ID.
+ * When set and non-null, an `x-workspace-id` header is attached to every request.
+ * Pass `null` to clear the getter (own workspace is used by default on the server).
+ */
+export function setWorkspaceIdGetter(getter: (() => string | null) | null): void {
+  _workspaceIdGetter = getter;
 }
 
 function isRequest(input: RequestInfo | URL): input is Request {
@@ -355,6 +365,14 @@ export async function customFetch<T = unknown>(
     const token = await _authTokenGetter();
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
+    }
+  }
+
+  // Attach workspace ID header when a workspace is selected.
+  if (_workspaceIdGetter && !headers.has("x-workspace-id")) {
+    const wid = _workspaceIdGetter();
+    if (wid) {
+      headers.set("x-workspace-id", wid);
     }
   }
 

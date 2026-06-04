@@ -11,7 +11,7 @@ router.get("/logs", requireAuth, async (req: AuthRequest, res): Promise<void> =>
   const filter = queryParsed.success ? queryParsed.data.filter : undefined;
   const limit = queryParsed.success ? (queryParsed.data.limit ?? 100) : 100;
 
-  const query: any = { ownerId: new Types.ObjectId(req.userId) };
+  const query: any = { ownerId: new Types.ObjectId(req.workspaceId!) };
   if (filter && filter !== "all") query.severity = filter;
 
   const logs = await Log.find(query).sort({ createdAt: -1 }).limit(limit);

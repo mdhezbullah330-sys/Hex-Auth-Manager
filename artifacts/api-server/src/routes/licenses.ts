@@ -17,7 +17,7 @@ function formatLicense(lic: any, username?: string) {
 }
 
 router.get("/licenses", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  const licenses = await License.find({ ownerId: new Types.ObjectId(req.userId) }).sort({ createdAt: 1 });
+  const licenses = await License.find({ ownerId: new Types.ObjectId(req.workspaceId!) }).sort({ createdAt: 1 });
   const withUsernames = await Promise.all(licenses.map(async (lic) => {
     let username: string | undefined;
     if (lic.usedBy) { const user = await User.findById(lic.usedBy).select("username"); username = user?.username; }
@@ -32,7 +32,7 @@ router.post("/licenses/generate", requireAuth, async (req: AuthRequest, res): Pr
   const quantity = parsed.data.quantity ?? 1;
   const keys = [];
   for (let i = 0; i < quantity; i++) {
-    const lic = await License.create({ ownerId: new Types.ObjectId(req.userId), key: generateKey(), plan: parsed.data.plan, status: "active", expiresAt: parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : null });
+    const lic = await License.create({ ownerId: new Types.ObjectId(req.workspaceId!), key: generateKey(), plan: parsed.data.plan, status: "active", expiresAt: parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : null });
     keys.push(lic);
   }
   res.status(201).json(formatLicense(keys[0]));

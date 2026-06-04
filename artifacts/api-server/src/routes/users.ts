@@ -33,7 +33,7 @@ function formatAppUser(u: any) {
 }
 
 router.get("/users", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  const filter: Record<string, any> = { ownerId: new Types.ObjectId(req.userId) };
+  const filter: Record<string, any> = { ownerId: new Types.ObjectId(req.workspaceId!) };
   if (req.query.appId && typeof req.query.appId === "string") {
     filter.appId = new Types.ObjectId(req.query.appId);
   }
@@ -47,12 +47,12 @@ router.post("/users", requireAuth, async (req: AuthRequest, res): Promise<void> 
     res.status(400).json({ error: "username, password, and plan are required" });
     return;
   }
-  const existing = await AppUser.findOne({ ownerId: new Types.ObjectId(req.userId), username });
+  const existing = await AppUser.findOne({ ownerId: new Types.ObjectId(req.workspaceId!), username });
   if (existing) { res.status(400).json({ error: "Username already exists for this account" }); return; }
   const passwordHash = await bcrypt.hash(password, 10);
   const token = generateUserToken();
   const user = await AppUser.create({
-    ownerId: new Types.ObjectId(req.userId),
+    ownerId: new Types.ObjectId(req.workspaceId!),
     appId: appId ? new Types.ObjectId(appId) : null,
     username,
     email: email ?? "",
@@ -65,28 +65,28 @@ router.post("/users", requireAuth, async (req: AuthRequest, res): Promise<void> 
     subscriptionExpiry: expiresAt ? new Date(expiresAt) : null,
   });
   const admin = await User.findById(req.userId);
-  await Log.create({ ownerId: new Types.ObjectId(req.userId), userId: user._id, action: "user.create", description: `${admin?.username ?? "admin"} · Created user "${username}"`, ipAddress: req.ip ?? null, severity: "info" });
+  await Log.create({ ownerId: new Types.ObjectId(req.workspaceId!), userId: user._id, action: "user.create", description: `${admin?.username ?? "admin"} · Created user "${username}"`, ipAddress: req.ip ?? null, severity: "info" });
   res.status(201).json(formatAppUser(user));
 });
 
 router.get("/users/:id", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  const user = await AppUser.findOne({ _id: req.params.id, ownerId: new Types.ObjectId(req.userId) });
+  const user = await AppUser.findOne({ _id: req.params.id, ownerId: new Types.ObjectId(req.workspaceId!) });
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   res.json(formatAppUser(user));
 });
 
 router.delete("/users/:id", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  const user = await AppUser.findOneAndDelete({ _id: req.params.id, ownerId: new Types.ObjectId(req.userId) });
+  const user = await AppUser.findOneAndDelete({ _id: req.params.id, ownerId: new Types.ObjectId(req.workspaceId!) });
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   const admin = await User.findById(req.userId);
-  await Log.create({ ownerId: new Types.ObjectId(req.userId), userId: null, action: "user.delete", description: `${admin?.username ?? "admin"} · Deleted user "${user.username}"`, ipAddress: req.ip ?? null, severity: "warn" });
+  await Log.create({ ownerId: new Types.ObjectId(req.workspaceId!), userId: null, action: "user.delete", description: `${admin?.username ?? "admin"} · Deleted user "${user.username}"`, ipAddress: req.ip ?? null, severity: "warn" });
   res.json({ ok: true, message: "User deleted" });
 });
 
 router.post("/users/:id/rotate-token", requireAuth, async (req: AuthRequest, res): Promise<void> => {
   const newToken = generateUserToken();
   const user = await AppUser.findOneAndUpdate(
-    { _id: req.params.id, ownerId: new Types.ObjectId(req.userId) },
+    { _id: req.params.id, ownerId: new Types.ObjectId(req.workspaceId!) },
     { token: newToken },
     { new: true }
   );
@@ -95,27 +95,27 @@ router.post("/users/:id/rotate-token", requireAuth, async (req: AuthRequest, res
 });
 
 router.post("/users/:id/ban", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.userId) }, { status: "banned" }, { new: true });
+  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.workspaceId!) }, { status: "banned" }, { new: true });
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   const admin = await User.findById(req.userId);
-  await Log.create({ ownerId: new Types.ObjectId(req.userId), userId: user._id, action: "user.ban", description: `${admin?.username ?? "admin"} · Banned "${user.username}"`, ipAddress: req.ip ?? null, severity: "bad" });
+  await Log.create({ ownerId: new Types.ObjectId(req.workspaceId!), userId: user._id, action: "user.ban", description: `${admin?.username ?? "admin"} · Banned "${user.username}"`, ipAddress: req.ip ?? null, severity: "bad" });
   if (admin?.webhookUrl) await sendDiscordWebhook(admin.webhookUrl, "user.ban", user.username, req.ip ?? "", `Banned by ${admin.username}`);
   res.json(formatAppUser(user));
 });
 
 router.post("/users/:id/unban", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.userId) }, { status: "active" }, { new: true });
+  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.workspaceId!) }, { status: "active" }, { new: true });
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   const admin = await User.findById(req.userId);
-  await Log.create({ ownerId: new Types.ObjectId(req.userId), userId: user._id, action: "user.unban", description: `${admin?.username ?? "admin"} · Unbanned "${user.username}"`, ipAddress: req.ip ?? null, severity: "good" });
+  await Log.create({ ownerId: new Types.ObjectId(req.workspaceId!), userId: user._id, action: "user.unban", description: `${admin?.username ?? "admin"} · Unbanned "${user.username}"`, ipAddress: req.ip ?? null, severity: "good" });
   res.json(formatAppUser(user));
 });
 
 router.post("/users/:id/reset-hwid", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.userId) }, { hwid: null }, { new: true });
+  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.workspaceId!) }, { hwid: null }, { new: true });
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   const admin = await User.findById(req.userId);
-  await Log.create({ ownerId: new Types.ObjectId(req.userId), userId: user._id, action: "hwid.reset", description: `${admin?.username ?? "admin"} · Reset HWID for "${user.username}"`, ipAddress: req.ip ?? null, severity: "warn" });
+  await Log.create({ ownerId: new Types.ObjectId(req.workspaceId!), userId: user._id, action: "hwid.reset", description: `${admin?.username ?? "admin"} · Reset HWID for "${user.username}"`, ipAddress: req.ip ?? null, severity: "warn" });
   if (admin?.webhookUrl) await sendDiscordWebhook(admin.webhookUrl, "hwid.reset", user.username, req.ip ?? "", `HWID reset by ${admin.username}`);
   res.json(formatAppUser(user));
 });
@@ -128,7 +128,7 @@ router.patch("/users/:id", requireAuth, async (req: AuthRequest, res): Promise<v
   if (bypassHwid !== undefined) update.bypassHwid = Boolean(bypassHwid);
   if (maxConcurrentSessions !== undefined) update.maxConcurrentSessions = parseInt(String(maxConcurrentSessions));
   const user = await AppUser.findOneAndUpdate(
-    { _id: req.params.id, ownerId: new Types.ObjectId(req.userId) },
+    { _id: req.params.id, ownerId: new Types.ObjectId(req.workspaceId!) },
     update,
     { new: true }
   );
@@ -139,7 +139,7 @@ router.patch("/users/:id", requireAuth, async (req: AuthRequest, res): Promise<v
 router.patch("/users/:id/plan", requireAuth, async (req: AuthRequest, res): Promise<void> => {
   const body = UpdateUserPlanBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
-  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.userId) }, { plan: body.data.plan }, { new: true });
+  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.workspaceId!) }, { plan: body.data.plan }, { new: true });
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   res.json(formatAppUser(user));
 });
@@ -148,7 +148,7 @@ router.patch("/users/:id/subscription", requireAuth, async (req: AuthRequest, re
   const body = UpdateUserSubscriptionBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const expiry = body.data.expiresAt ? new Date(body.data.expiresAt) : null;
-  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.userId) }, { subscriptionExpiry: expiry }, { new: true });
+  const user = await AppUser.findOneAndUpdate({ _id: req.params.id, ownerId: new Types.ObjectId(req.workspaceId!) }, { subscriptionExpiry: expiry }, { new: true });
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   res.json(formatAppUser(user));
 });

@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from "react";
-import { User, useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { User, useGetMe, getGetMeQueryKey, setWorkspaceIdGetter } from "@workspace/api-client-react";
 
 interface SelectedProject {
   ownerId: string;
@@ -30,6 +30,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return null;
     }
   });
+
+  useEffect(() => {
+    setWorkspaceIdGetter(() => selectedProject?.ownerId ?? null);
+    return () => { setWorkspaceIdGetter(null); };
+  }, [selectedProject]);
 
   const { data: meData, isLoading: isMeLoading } = useGetMe({
     query: {
