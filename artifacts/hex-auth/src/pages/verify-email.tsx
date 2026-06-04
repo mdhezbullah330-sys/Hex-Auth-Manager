@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useToast } from "@/hooks/use-toast";
+import { Terminal, X } from "lucide-react";
 
 const BASE = import.meta.env.BASE_URL?.replace(/\/$/, "") ?? "";
 
@@ -16,6 +17,8 @@ export default function VerifyEmailPage() {
   const [code, setCode] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resending, setResending] = useState(false);
+  const [devCode, setDevCode] = useState<string | null>(null);
+  const [fetchingDevCode, setFetchingDevCode] = useState(false);
 
   const verifyMutation = useVerifyEmail();
 
@@ -58,6 +61,7 @@ export default function VerifyEmailPage() {
   const handleResend = async () => {
     if (resendCooldown > 0 || resending) return;
     setResending(true);
+    setDevCode(null);
     try {
       const res = await fetch(`${BASE}/api/auth/resend-code`, {
         method: "POST",
@@ -76,6 +80,24 @@ export default function VerifyEmailPage() {
       toast({ variant: "destructive", title: "Failed to resend", description: "Network error." });
     } finally {
       setResending(false);
+    }
+  };
+
+  const handleShowDevCode = async () => {
+    setFetchingDevCode(true);
+    try {
+      const res = await fetch(`${BASE}/api/auth/dev-code?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      if (res.ok && data.code) {
+        setDevCode(data.code);
+        setCode(data.code);
+      } else {
+        toast({ variant: "destructive", title: "Could not fetch code", description: data.error || "No pending code found." });
+      }
+    } catch {
+      toast({ variant: "destructive", title: "Network error", description: "Could not reach server." });
+    } finally {
+      setFetchingDevCode(false);
     }
   };
 
@@ -107,6 +129,22 @@ export default function VerifyEmailPage() {
               </InputOTPGroup>
             </InputOTP>
 
+            {/* Dev code fallback box */}
+            {devCode && (
+              <div className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/8">
+                <div className="flex items-center gap-2.5">
+                  <Terminal className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div>
+                    <p className="text-xs text-amber-400/70 font-medium">Dev mode — verification code</p>
+                    <p className="text-xl font-mono font-bold tracking-widest text-amber-300">{devCode}</p>
+                  </div>
+                </div>
+                <button onClick={() => setDevCode(null)} className="text-amber-400/50 hover:text-amber-400">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
             <Button
               className="w-full font-semibold"
               onClick={handleVerify}
@@ -127,6 +165,19 @@ export default function VerifyEmailPage() {
                 ? `Resend code (${resendCooldown}s)`
                 : "Resend code"}
             </button>
+
+            {/* Dev fallback — only visible in non-production */}
+            {import.meta.env.DEV && (
+              <button
+                onClick={handleShowDevCode}
+                disabled={fetchingDevCode}
+                className="text-xs text-amber-400/70 hover:text-amber-400 transition-colors flex items-center gap-1.5 disabled:opacity-50"
+              >
+                <Terminal className="w-3 h-3" />
+                {fetchingDevCode ? "Fetching..." : "Email not received? Show code directly"}
+              </button>
+            )}
+
             <p className="text-sm text-muted-foreground">
               Wrong email?{" "}
               <Link href="/login">

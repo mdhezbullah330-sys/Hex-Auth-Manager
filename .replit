@@ -78,4 +78,4 @@ externalPort = 80
 LOG_LEVEL = "info"
 SMTP_HOST = "smtp.mailersend.net"
 SMTP_PORT = "587"
-SMTP_FROM = "Hex Auth <noreply@benjahexauth.qzz.io>"
+SMTP_FROM = "Hex Auth <MS_551tBO@benjahexauth.qzz.io>"
