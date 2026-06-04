@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   useGetSettings, getGetSettingsQueryKey,
   useUpdateProfile, useUpdatePassword, useUpdateWebhook,
@@ -15,14 +15,44 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Trash2, Clock, CheckCircle2, Crown, Shield, Eye } from "lucide-react";
+import { Trash2, Clock, CheckCircle2, Crown, Shield, Eye, Globe, Monitor, Smartphone, X } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useLocation } from "wouter";
+
+type AccountLog = {
+  id: string;
+  ipAddress: string;
+  userAgent: string;
+  createdAt: string;
+};
+
+function parseUserAgent(ua: string) {
+  let browser = "Unknown Browser";
+  let os = "Unknown OS";
+
+  if (ua.includes("Chrome") && !ua.includes("Edg")) browser = "Chrome";
+  else if (ua.includes("Firefox")) browser = "Firefox";
+  else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
+  else if (ua.includes("Edg")) browser = "Edge";
+  else if (ua.includes("Opera") || ua.includes("OPR")) browser = "Opera";
+
+  if (ua.includes("Windows")) os = "Windows";
+  else if (ua.includes("Mac OS")) os = "macOS";
+  else if (ua.includes("Linux")) os = "Linux";
+  else if (ua.includes("Android")) os = "Android";
+  else if (ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+
+  return { browser, os };
+}
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("profile");
+  const [location] = useLocation();
+  
+  const tabFromUrl = new URLSearchParams(location.split("?")[1] || "").get("tab");
+  const [activeTab, setActiveTab] = useState(tabFromUrl || "profile");
 
   const { data: team, isLoading: teamLoading } = useGetTeam({ query: { queryKey: getGetTeamQueryKey() } });
   
@@ -37,7 +67,34 @@ export default function SettingsPage() {
   const [webhookUrl, setWebhookUrl] = useState(user?.webhookUrl || "");
   const [inviteData, setInviteData] = useState({ email: "", role: "viewer" });
 
+  const [accountLogs, setAccountLogs] = useState<AccountLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+
   const isOwner = user?.role === "owner";
+
+  useEffect(() => {
+    if (activeTab === "logs") {
+      fetchLogs();
+    }
+  }, [activeTab]);
+
+  const fetchLogs = async () => {
+    setLogsLoading(true);
+    try {
+      const token = localStorage.getItem("hexauth_token");
+      const res = await fetch("/api/auth/account-logs", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAccountLogs(data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLogsLoading(false);
+    }
+  };
 
   const handleProfileUpdate = () => {
     updateProfileMutation.mutate({ data: profileData }, {
@@ -59,6 +116,14 @@ export default function SettingsPage() {
   const handleWebhookUpdate = () => {
     updateWebhookMutation.mutate({ data: { webhookUrl: webhookUrl || null } }, {
       onSuccess: () => toast({ variant: "success", title: "Webhook settings updated" }),
+      onError: (err: any) => toast({ variant: "destructive", title: "Update failed", description: err?.data?.error || err?.message })
+    });
+  };
+
+  const handleWebhookRemove = () => {
+    setWebhookUrl("");
+    updateWebhookMutation.mutate({ data: { webhookUrl: null } }, {
+      onSuccess: () => toast({ variant: "success", title: "Webhook removed" }),
       onError: (err: any) => toast({ variant: "destructive", title: "Update failed", description: err?.data?.error || err?.message })
     });
   };
@@ -110,6 +175,7 @@ export default function SettingsPage() {
           <TabsTrigger value="team" className="data-[state=active]:bg-background">Team</TabsTrigger>
           <TabsTrigger value="integrations" className="data-[state=active]:bg-background">Integrations</TabsTrigger>
           <TabsTrigger value="plan" className="data-[state=active]:bg-background">Plan & Billing</TabsTrigger>
+          <TabsTrigger value="logs" className="data-[state=active]:bg-background">Logs</TabsTrigger>
         </TabsList>
 
         <div className="mt-6">
@@ -267,14 +333,53 @@ export default function SettingsPage() {
           <TabsContent value="integrations">
             <Card className="border-border">
               <CardHeader>
-                <CardTitle>Discord Webhooks</CardTitle>
-                <CardDescription>Send real-time alerts to a Discord channel.</CardDescription>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[#5865F2]/20 border border-[#5865F2]/30 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-[#7983f5]" viewBox="0 0 127.14 96.36" fill="currentColor">
+                      <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <CardTitle>Discord Webhooks</CardTitle>
+                    <CardDescription>Send real-time alerts to a Discord channel when users login, get banned, or HWID changes.</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 max-w-xl">
                   <Label>Webhook URL</Label>
-                  <Input placeholder="https://discord.com/api/webhooks/..." value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} />
-                  <p className="text-xs text-muted-foreground mt-1">We will send notifications for new users, banned users, and failed logins.</p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="https://discord.com/api/webhooks/..."
+                      value={webhookUrl}
+                      onChange={e => setWebhookUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    {webhookUrl && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleWebhookRemove}
+                        className="shrink-0 text-destructive border-destructive/20 hover:bg-destructive/10"
+                        title="Remove webhook"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Notifications are sent for: login success, login failure, HWID mismatch, and user bans.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-xl">
+                  {[
+                    { label: "login.ok", desc: "Successful SDK login", color: "text-green-500 bg-green-500/10 border-green-500/20" },
+                    { label: "hwid.deny", desc: "HWID mismatch detected", color: "text-yellow-500 bg-yellow-500/10 border-yellow-500/20" },
+                    { label: "user.ban", desc: "User ban event", color: "text-red-500 bg-red-500/10 border-red-500/20" },
+                  ].map(e => (
+                    <div key={e.label} className={`p-2 rounded-lg border text-xs ${e.color}`}>
+                      <p className="font-mono font-bold">{e.label}</p>
+                      <p className="text-muted-foreground mt-0.5">{e.desc}</p>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
               <CardFooter>
@@ -289,8 +394,8 @@ export default function SettingsPage() {
                 <CardTitle>Current Plan: <span className="text-primary uppercase tracking-wider">{user?.plan || 'FREE'}</span></CardTitle>
                 <CardDescription>Upgrade your plan to unlock more limits and features.</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="p-4 border border-primary/20 bg-primary/5 rounded-lg max-w-xl mb-6">
+              <CardContent className="space-y-4">
+                <div className="p-4 border border-primary/20 bg-primary/5 rounded-lg max-w-xl">
                   <h4 className="font-semibold mb-2">Redeem Upgrade Code</h4>
                   <p className="text-sm text-muted-foreground mb-4">If you've purchased a plan via our local payment methods, enter the code provided by support here.</p>
                   <div className="flex gap-2">
@@ -298,6 +403,68 @@ export default function SettingsPage() {
                     <Button onClick={() => toast({ title: "Invalid Code", variant: "destructive" })}>Apply</Button>
                   </div>
                 </div>
+                <div className="max-w-xl">
+                  <a href="/upgrade" className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium">
+                    View all plans and payment methods →
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="logs">
+            <Card className="border-border">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Account Login Logs</CardTitle>
+                    <CardDescription>Recent dashboard login sessions for your account.</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={fetchLogs} disabled={logsLoading}>
+                    {logsLoading ? "Loading..." : "Refresh"}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {logsLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
+                  </div>
+                ) : accountLogs.length === 0 ? (
+                  <div className="text-center py-10 text-muted-foreground">
+                    <Globe className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                    <p className="font-medium">No login records yet</p>
+                    <p className="text-sm mt-1">Login records will appear here after you next sign in.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {accountLogs.map((log) => {
+                      const { browser, os } = parseUserAgent(log.userAgent);
+                      const date = new Date(log.createdAt);
+                      const isMobile = log.userAgent.includes("Mobile") || log.userAgent.includes("Android") || log.userAgent.includes("iPhone");
+                      return (
+                        <div key={log.id} className="flex items-center gap-4 p-3 border border-border rounded-lg bg-card/40">
+                          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
+                            {isMobile ? <Smartphone className="w-4 h-4 text-muted-foreground" /> : <Monitor className="w-4 h-4 text-muted-foreground" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium">{browser} on {os}</span>
+                              <Badge variant="outline" className="text-[10px] font-mono">{log.ipAddress}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5 truncate" title={log.userAgent}>
+                              {log.userAgent.slice(0, 80)}{log.userAgent.length > 80 ? "…" : ""}
+                            </p>
+                          </div>
+                          <div className="text-xs text-muted-foreground shrink-0 text-right">
+                            <p>{date.toLocaleDateString()}</p>
+                            <p>{date.toLocaleTimeString()}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

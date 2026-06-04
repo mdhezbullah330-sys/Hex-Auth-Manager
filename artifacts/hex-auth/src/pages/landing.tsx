@@ -343,9 +343,9 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link href="/register">
+                <Link href="/login">
                   <Button size="lg" className="h-14 px-10 text-base font-bold gap-2 shadow-lg shadow-primary/25">
-                    Start Building for Free <ArrowRight className="w-4 h-4" />
+                    Start Free <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
                 <a href="#sdk">
@@ -589,7 +589,7 @@ export default function LandingPage() {
                       <li key={t} className="flex items-center gap-2"><Check />{t}</li>
                     ))}
                   </ul>
-                  <Link href="/register"><Button className="w-full" variant="outline">Start Free</Button></Link>
+                  <Link href="/login"><Button className="w-full" variant="outline">Start Free</Button></Link>
                 </motion.div>
               </SlideInCard>
 
@@ -606,7 +606,9 @@ export default function LandingPage() {
                       <li key={t} className="flex items-center gap-2"><Check />{t}</li>
                     ))}
                   </ul>
-                  <Link href="/register"><Button className="w-full font-bold">Get Starter</Button></Link>
+                  <a href="https://discord.gg/TKdd5GNhxq" target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full font-bold">Get Starter</Button>
+                  </a>
                 </motion.div>
               </SlideInCard>
 
@@ -620,20 +622,38 @@ export default function LandingPage() {
                       <li key={t} className="flex items-center gap-2"><Check />{t}</li>
                     ))}
                   </ul>
-                  <Link href="/register"><Button className="w-full" variant="outline">Get Pro</Button></Link>
+                  <a href="https://discord.gg/TKdd5GNhxq" target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full" variant="outline">Get Pro</Button>
+                  </a>
                 </motion.div>
               </SlideInCard>
             </div>
 
             {/* Payment methods */}
             <FadeInSection delay={0.2}>
-              <div className="mt-12 text-center p-8 rounded-2xl bg-background border border-border/60">
-                <p className="font-bold text-foreground mb-3 text-lg">Local Payment Methods</p>
-                <p className="text-muted-foreground text-lg font-mono">
-                  <span className="text-primary font-bold">bKash</span> · 01755334082 &nbsp;&nbsp;
-                  <span className="text-primary font-bold">Nagad</span> · 01755334082
-                </p>
-                <p className="mt-3 text-sm text-muted-foreground/70">Contact support after sending payment to activate your plan manually.</p>
+              <div className="mt-12 p-8 rounded-2xl bg-background border border-border/60">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div>
+                    <p className="font-bold text-foreground mb-1 text-lg">Local Payment Methods</p>
+                    <p className="text-muted-foreground text-sm">Send payment, then contact us on Discord to activate your plan.</p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-center gap-4 text-center">
+                    <div className="px-6 py-3 rounded-xl border border-border bg-card/60">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">bKash</p>
+                      <p className="text-lg font-mono font-bold text-foreground">01755334082</p>
+                    </div>
+                    <div className="px-6 py-3 rounded-xl border border-border bg-card/60">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Nagad</p>
+                      <p className="text-lg font-mono font-bold text-foreground">01755334082</p>
+                    </div>
+                    <a href="https://discord.gg/TKdd5GNhxq" target="_blank" rel="noopener noreferrer">
+                      <div className="px-6 py-3 rounded-xl border border-[#5865F2]/50 bg-[#5865F2]/10 hover:bg-[#5865F2]/20 transition-colors cursor-pointer">
+                        <p className="text-xs text-[#7983f5] uppercase tracking-wider mb-1">Discord</p>
+                        <p className="text-base font-bold text-[#7983f5]">Contact Support</p>
+                      </div>
+                    </a>
+                  </div>
+                </div>
               </div>
             </FadeInSection>
           </div>
@@ -660,9 +680,9 @@ export default function LandingPage() {
             <p className="text-xl text-muted-foreground mb-10">
               Join 2 developers who trust Hex Auth to secure their applications.
             </p>
-            <Link href="/register">
+            <Link href="/login">
               <Button size="lg" className="h-14 px-12 text-lg font-bold gap-2 shadow-xl shadow-primary/25">
-                Create Free Account <ArrowRight className="w-5 h-5" />
+                Start Free <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
           </FadeInSection>

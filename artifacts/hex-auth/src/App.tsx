@@ -10,6 +10,7 @@ import LandingPage from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import VerifyEmailPage from "@/pages/verify-email";
+import ForgotPasswordPage from "@/pages/forgot-password";
 import DashboardPage from "@/pages/dashboard";
 import AppsPage from "@/pages/apps";
 import UsersPage from "@/pages/users";
@@ -24,6 +25,7 @@ import DocsPage from "@/pages/docs";
 import InviteAcceptedPage from "@/pages/invite-accepted";
 import InviteSignupPage from "@/pages/invite-signup";
 import SelectProjectPage from "@/pages/select-project";
+import UpgradePlanPage from "@/pages/upgrade-plan";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -61,7 +63,6 @@ function ProtectedRoute({ component: Component }: { component: React.ElementType
   );
 }
 
-// Auth-required page but without the dashboard layout (e.g. select-project)
 function AuthOnlyRoute({ component: Component }: { component: React.ElementType }) {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
@@ -78,7 +79,6 @@ function AuthOnlyRoute({ component: Component }: { component: React.ElementType 
   return <Component />;
 }
 
-// Redirects logged-in users away from public-only pages (landing, login, register)
 function PublicRoute({ component: Component }: { component: React.ElementType }) {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
@@ -101,6 +101,7 @@ function Router() {
       <Route path="/">{() => <PublicRoute component={LandingPage} />}</Route>
       <Route path="/login">{() => <PublicRoute component={LoginPage} />}</Route>
       <Route path="/register">{() => <PublicRoute component={RegisterPage} />}</Route>
+      <Route path="/forgot-password">{() => <PublicRoute component={ForgotPasswordPage} />}</Route>
       <Route path="/verify-email" component={VerifyEmailPage} />
       <Route path="/invite-accepted" component={InviteAcceptedPage} />
       <Route path="/invite-signup" component={InviteSignupPage} />
@@ -118,6 +119,7 @@ function Router() {
       <Route path="/blacklist"><ProtectedRoute component={BlacklistPage} /></Route>
       <Route path="/event-logs"><ProtectedRoute component={EventLogsPage} /></Route>
       <Route path="/settings"><ProtectedRoute component={SettingsPage} /></Route>
+      <Route path="/upgrade"><ProtectedRoute component={UpgradePlanPage} /></Route>
       <Route path="/files"><ProtectedRoute component={() => <div className="p-8 text-center text-muted-foreground">Files feature coming soon.</div>} /></Route>
       
       <Route component={NotFound} />

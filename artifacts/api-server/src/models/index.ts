@@ -17,6 +17,8 @@ export interface IUser extends Document {
   webhookUrl: string | null;
   appId: string | null;
   appSecret: string | null;
+  passwordResetCode: string | null;
+  passwordResetExpiry: Date | null;
   createdAt: Date;
 }
 
@@ -36,6 +38,8 @@ const UserSchema = new Schema<IUser>(
     webhookUrl: { type: String, default: null },
     appId: { type: String, default: null },
     appSecret: { type: String, default: null },
+    passwordResetCode: { type: String, default: null },
+    passwordResetExpiry: { type: Date, default: null },
   },
   { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
 );
@@ -140,6 +144,24 @@ const LogSchema = new Schema<ILog>(
     severity: { type: String, default: "info" },
   },
   { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
+);
+
+// ─── AccountLog (dashboard login tracking) ───────────────────────────────────
+export interface IAccountLog extends Document {
+  _id: Types.ObjectId;
+  userId: Types.ObjectId;
+  ipAddress: string;
+  userAgent: string;
+  createdAt: Date;
+}
+
+const AccountLogSchema = new Schema<IAccountLog>(
+  {
+    userId: { type: Schema.Types.ObjectId, required: true },
+    ipAddress: { type: String, default: "unknown" },
+    userAgent: { type: String, default: "unknown" },
+  },
+  { timestamps: { createdAt: "createdAt", updatedAt: false } }
 );
 
 // ─── Blacklist ────────────────────────────────────────────────────────────────
@@ -269,6 +291,7 @@ const AppUserSchema = new Schema<IAppUser>(
 );
 
 // ─── Exports ──────────────────────────────────────────────────────────────────
+export const AccountLog = mongoose.models.AccountLog || mongoose.model<IAccountLog>("AccountLog", AccountLogSchema);
 export const AppUser = mongoose.models.AppUser || mongoose.model<IAppUser>("AppUser", AppUserSchema);
 export const PendingRegistration =
   mongoose.models.PendingRegistration ||

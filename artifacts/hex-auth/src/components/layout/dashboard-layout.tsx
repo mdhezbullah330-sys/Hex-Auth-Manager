@@ -69,7 +69,7 @@ const navigation: SidebarGroup[] = [
   {
     label: "RESOURCES",
     items: [
-      { icon: ArrowUpCircle, label: "Upgrade Plan", href: "/settings?tab=plan" },
+      { icon: ArrowUpCircle, label: "Upgrade Plan", href: "/upgrade" },
       { icon: BookOpen, label: "Documentation", href: "/docs" },
     ],
   },
