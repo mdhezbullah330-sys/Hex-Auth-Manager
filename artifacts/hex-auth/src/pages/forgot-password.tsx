@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, ArrowLeft, CheckCircle2, Mail, KeyRound, Eye, EyeOff, RefreshCw, Terminal, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Mail, KeyRound, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,26 +24,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resending, setResending] = useState(false);
-  const [devCode, setDevCode] = useState<string | null>(null);
-  const [fetchingDevCode, setFetchingDevCode] = useState(false);
-
-  const handleShowDevCode = async () => {
-    setFetchingDevCode(true);
-    try {
-      const res = await fetch(`/api/auth/dev-code?email=${encodeURIComponent(email)}`);
-      const data = await res.json();
-      if (res.ok && data.resetCode) {
-        setDevCode(data.resetCode);
-        setCode(data.resetCode);
-      } else {
-        setError("No pending reset code found. Try sending the code again.");
-      }
-    } catch {
-      setError("Could not reach server.");
-    } finally {
-      setFetchingDevCode(false);
-    }
-  };
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +38,7 @@ export default function ForgotPasswordPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Failed to send reset code"); return; }
-      toast({ variant: "success", title: "Code sent!", description: data.emailSent ? "Check your inbox for the reset code." : "Code generated (check server logs if email unavailable)." });
+      toast({ variant: "success", title: "Code sent!", description: "Check your inbox for the reset code." });
       setStep("reset");
     } catch {
       setError("Network error. Please try again.");
