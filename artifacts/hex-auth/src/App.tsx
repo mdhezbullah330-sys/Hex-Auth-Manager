@@ -26,6 +26,7 @@ import InviteAcceptedPage from "@/pages/invite-accepted";
 import InviteSignupPage from "@/pages/invite-signup";
 import SelectProjectPage from "@/pages/select-project";
 import UpgradePlanPage from "@/pages/upgrade-plan";
+import FilesPage from "@/pages/files";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -120,7 +121,7 @@ function Router() {
       <Route path="/event-logs"><ProtectedRoute component={EventLogsPage} /></Route>
       <Route path="/settings"><ProtectedRoute component={SettingsPage} /></Route>
       <Route path="/upgrade"><ProtectedRoute component={UpgradePlanPage} /></Route>
-      <Route path="/files"><ProtectedRoute component={() => <div className="p-8 text-center text-muted-foreground">Files feature coming soon.</div>} /></Route>
+      <Route path="/files"><ProtectedRoute component={FilesPage} /></Route>
       
       <Route component={NotFound} />
     </Switch>

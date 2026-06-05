@@ -291,6 +291,19 @@ export default function LandingPage() {
           {/* Gradient overlays */}
           <div className="absolute inset-0 bg-gradient-radial from-primary/15 via-transparent to-transparent pointer-events-none" style={{ zIndex: 1 }} />
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent pointer-events-none" style={{ zIndex: 1 }} />
+          {/* Floating orbs */}
+          <motion.div
+            className="absolute left-1/4 top-1/3 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none"
+            animate={{ y: [0, -30, 0], x: [0, 15, 0], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            style={{ zIndex: 1 }}
+          />
+          <motion.div
+            className="absolute right-1/4 bottom-1/3 w-48 h-48 rounded-full bg-violet-500/10 blur-3xl pointer-events-none"
+            animate={{ y: [0, 25, 0], x: [0, -20, 0], opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            style={{ zIndex: 1 }}
+          />
 
           <div className="relative z-10 max-w-5xl mx-auto text-center">
             {/* Logo + brand in hero */}
@@ -344,14 +357,35 @@ export default function LandingPage() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/login">
-                  <Button size="lg" className="h-14 px-10 text-base font-bold gap-2 shadow-lg shadow-primary/25">
-                    Start Free <ArrowRight className="w-4 h-4" />
-                  </Button>
+                  <motion.div
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="relative group"
+                  >
+                    <motion.div
+                      className="absolute -inset-1 rounded-xl bg-gradient-to-r from-primary via-violet-500 to-indigo-500 opacity-0 blur-md group-hover:opacity-70 transition-opacity duration-500"
+                    />
+                    <Button size="lg" className="relative h-14 px-10 text-base font-bold gap-2 shadow-xl shadow-primary/30 overflow-hidden">
+                      <motion.span
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                        animate={{ x: ["-100%", "200%"] }}
+                        transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+                      />
+                      Start Free <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </motion.div>
                 </Link>
                 <a href="#sdk">
-                  <Button size="lg" variant="outline" className="h-14 px-10 text-base gap-2">
-                    View SDK <ChevronRight className="w-4 h-4" />
-                  </Button>
+                  <motion.div
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    <Button size="lg" variant="outline" className="h-14 px-10 text-base gap-2 border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-all">
+                      View SDK <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </motion.div>
                 </a>
               </div>
             </motion.div>

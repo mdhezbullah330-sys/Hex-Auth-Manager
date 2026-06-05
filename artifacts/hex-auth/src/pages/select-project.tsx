@@ -3,15 +3,16 @@ import { useLocation } from "wouter";
 import { useGetMyTeams, getGetMyTeamsQueryKey } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Shield, Eye, ArrowRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function SelectProjectPage() {
+export default function SelectWorkspacePage() {
   const { user, selectProject } = useAuth();
   const [, setLocation] = useLocation();
   const { data: teams, isLoading } = useGetMyTeams({ query: { queryKey: getGetMyTeamsQueryKey() } });
+
+  type Team = { ownerId: string; ownerUsername: string; ownerEmail?: string; role: string };
 
   const handleSelectOwn = () => {
     selectProject(null);
@@ -44,7 +45,7 @@ export default function SelectProjectPage() {
 
         <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-8 shadow-2xl">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold tracking-tight">Select a Project</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Select a Workspace</h1>
             <p className="text-muted-foreground text-sm mt-2">
               Choose which workspace you want to continue with.
             </p>
@@ -78,7 +79,7 @@ export default function SelectProjectPage() {
                 </div>
               </motion.button>
 
-              {teams && teams.map((team, i) => (
+              {teams && (teams as Team[]).map((team, i) => (
                 <motion.button
                   key={team.ownerId}
                   initial={{ opacity: 0, y: 8 }}

@@ -71,6 +71,7 @@ export default function SettingsPage() {
   const [logsLoading, setLogsLoading] = useState(false);
 
   const isOwner = user?.role === "owner";
+  const isAdmin = !isOwner && !!team?.find((m: any) => m.isYou && m.role === "admin");
 
   useEffect(() => {
     if (activeTab === "logs") {
@@ -225,7 +226,7 @@ export default function SettingsPage() {
 
           <TabsContent value="team">
             <div className="space-y-6">
-              {isOwner && (
+              {(isOwner || isAdmin) && (
                 <Card className="border-border">
                   <CardHeader>
                     <CardTitle>Invite Team Member</CardTitle>
@@ -296,7 +297,7 @@ export default function SettingsPage() {
                             {roleIcon(member.role)}
                             {member.role}
                           </Badge>
-                          {isOwner && !member.isYou && (
+                          {!member.isYou && member.role !== "owner" && (isOwner || (isAdmin && member.role !== "owner")) && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10">

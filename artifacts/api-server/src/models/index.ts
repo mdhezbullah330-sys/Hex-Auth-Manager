@@ -290,6 +290,40 @@ const AppUserSchema = new Schema<IAppUser>(
   { timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" } }
 );
 
+// ─── AppFile ──────────────────────────────────────────────────────────────────
+export interface IAppFile extends Document {
+  _id: Types.ObjectId;
+  ownerId: Types.ObjectId;
+  appId: Types.ObjectId | null;
+  name: string;
+  filename: string;
+  size: number;
+  mimeType: string;
+  requiredPlan: string;
+  note: string | null;
+  downloads: number;
+  fileId: string;
+  data: string;
+  createdAt: Date;
+}
+
+const AppFileSchema = new Schema<IAppFile>(
+  {
+    ownerId: { type: Schema.Types.ObjectId, required: true },
+    appId: { type: Schema.Types.ObjectId, default: null },
+    name: { type: String, required: true },
+    filename: { type: String, required: true },
+    size: { type: Number, default: 0 },
+    mimeType: { type: String, default: "application/octet-stream" },
+    requiredPlan: { type: String, default: "free" },
+    note: { type: String, default: null },
+    downloads: { type: Number, default: 0 },
+    fileId: { type: String, required: true, unique: true },
+    data: { type: String, required: true },
+  },
+  { timestamps: { createdAt: "createdAt", updatedAt: false } }
+);
+
 // ─── Exports ──────────────────────────────────────────────────────────────────
 export const AccountLog = mongoose.models.AccountLog || mongoose.model<IAccountLog>("AccountLog", AccountLogSchema);
 export const AppUser = mongoose.models.AppUser || mongoose.model<IAppUser>("AppUser", AppUserSchema);
@@ -304,3 +338,4 @@ export const Log = mongoose.models.Log || mongoose.model<ILog>("Log", LogSchema)
 export const Blacklist = mongoose.models.Blacklist || mongoose.model<IBlacklist>("Blacklist", BlacklistSchema);
 export const Variable = mongoose.models.Variable || mongoose.model<IVariable>("Variable", VariableSchema);
 export const TeamMember = mongoose.models.TeamMember || mongoose.model<ITeamMember>("TeamMember", TeamMemberSchema);
+export const AppFile = mongoose.models.AppFile || mongoose.model<IAppFile>("AppFile", AppFileSchema);

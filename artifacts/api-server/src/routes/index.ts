@@ -12,6 +12,7 @@ import settingsRouter from "./settings";
 import statsRouter from "./stats";
 import sdkRouter from "./sdk";
 import downloadsRouter from "./downloads";
+import filesRouter from "./files";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(settingsRouter);
 router.use(statsRouter);
 router.use(sdkRouter);
 router.use(downloadsRouter);
+router.use(filesRouter);
 
 export default router;

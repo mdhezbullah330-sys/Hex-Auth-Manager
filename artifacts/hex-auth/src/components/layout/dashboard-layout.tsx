@@ -238,6 +238,36 @@ function WorkspaceSwitcher() {
   );
 }
 
+const routeLabels: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/apps": "Manage Apps",
+  "/users": "Users",
+  "/licenses": "Licenses",
+  "/api-tokens": "API Tokens",
+  "/subscriptions": "Subscriptions",
+  "/sessions": "Sessions",
+  "/blacklist": "Blacklist",
+  "/event-logs": "Event Logs",
+  "/settings": "Settings",
+  "/files": "Files",
+  "/upgrade": "Upgrade Plan",
+  "/docs": "Documentation",
+};
+
+function Breadcrumb({ location }: { location: string }) {
+  const { user, selectedProject } = useAuth();
+  const workspaceName = selectedProject ? selectedProject.ownerUsername : user?.username ?? "My Workspace";
+  const pageLabel = routeLabels[location] ?? null;
+  if (!pageLabel) return null;
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60 mb-4">
+      <span className="font-medium text-muted-foreground/80 truncate max-w-[120px]">{workspaceName}</span>
+      <span>/</span>
+      <span className="text-muted-foreground/80">{pageLabel}</span>
+    </div>
+  );
+}
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { user, logout } = useAuth();
@@ -361,6 +391,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 flex flex-col min-w-0 md:ml-60 pt-14 md:pt-0">
         <div className="flex-1 overflow-auto p-4 md:p-8">
           <div className="mx-auto max-w-6xl">
+            <Breadcrumb location={location} />
             {children}
           </div>
         </div>

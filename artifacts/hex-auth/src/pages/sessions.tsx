@@ -1,23 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   useGetSessions, getGetSessionsQueryKey,
-  useKillSession
+  useKillSession,
+  useGetApps, getGetAppsQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { XCircle, Monitor, Globe } from "lucide-react";
+import { XCircle, Monitor, Globe, Layers } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function SessionsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+  const [selectedAppId, setSelectedAppId] = useState<string | undefined>(undefined);
+
+  const { data: apps } = useGetApps({ query: { queryKey: getGetAppsQueryKey() } });
   const { data: sessions, isLoading } = useGetSessions({ query: { queryKey: getGetSessionsQueryKey() } });
   const killSessionMutation = useKillSession();
+
+  const selectedApp = (apps as any[] | undefined)?.find((a: any) => a.id?.toString() === selectedAppId || a.appId === selectedAppId);
+  const filteredSessions = (sessions as any[] | undefined)?.filter((s: any) =>
+    !selectedAppId || s.appId === selectedAppId || s.appId === selectedApp?.appId
+  );
 
   const handleKillSession = (id: number) => {
     killSessionMutation.mutate(
@@ -36,11 +45,32 @@ export default function SessionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Active Sessions</h1>
-          <p className="text-muted-foreground">Monitor and control live user connections.</p>
+          <p className="text-muted-foreground">
+            {selectedApp ? `${selectedApp.name} · ${filteredSessions?.length ?? 0} sessions` : `All apps · ${filteredSessions?.length ?? 0} sessions`}
+          </p>
         </div>
+        {apps && (apps as any[]).length > 1 ? (
+          <Select value={selectedAppId ?? "all"} onValueChange={(v) => setSelectedAppId(v === "all" ? undefined : v)}>
+            <SelectTrigger className="w-48">
+              <Layers className="w-4 h-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="All apps" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All apps</SelectItem>
+              {(apps as any[]).map((a: any) => (
+                <SelectItem key={a.id} value={a.id.toString()}>{a.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : apps && (apps as any[]).length === 1 ? (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 text-sm font-medium text-muted-foreground border border-border/50">
+            <Layers className="w-3.5 h-3.5" />
+            {(apps as any[])[0].name}
+          </div>
+        ) : null}
       </div>
 
       <Card className="border-border">
@@ -68,8 +98,8 @@ export default function SessionsPage() {
                     <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
                   </TableRow>
                 ))
-              ) : sessions && sessions.length > 0 ? (
-                sessions.map((session) => (
+              ) : filteredSessions && filteredSessions.length > 0 ? (
+                filteredSessions.map((session: any) => (
                   <TableRow key={session.id}>
                     <TableCell className="font-medium">{session.username}</TableCell>
                     <TableCell>

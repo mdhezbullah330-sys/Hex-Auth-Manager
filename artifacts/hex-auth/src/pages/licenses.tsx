@@ -3,7 +3,8 @@ import {
   useGetLicenses, getGetLicensesQueryKey,
   useGenerateLicense,
   useDeleteLicense,
-  useRedeemLicense
+  useRedeemLicense,
+  useGetApps, getGetAppsQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,9 @@ import { useQueryClient } from "@tanstack/react-query";
 export default function LicensesPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+  const [selectedAppId, setSelectedAppId] = useState<string | undefined>(undefined);
+
+  const { data: apps } = useGetApps({ query: { queryKey: getGetAppsQueryKey() } });
   const { data: licenses, isLoading } = useGetLicenses({ query: { queryKey: getGetLicensesQueryKey() } });
   
   const generateMutation = useGenerateLicense();
@@ -92,18 +95,35 @@ export default function LicensesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">License Keys</h1>
           <p className="text-muted-foreground">Generate and manage activation keys for your software.</p>
         </div>
-        
-        <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" /> Generate Keys
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          {apps && (apps as any[]).length > 1 ? (
+            <Select value={selectedAppId ?? "all"} onValueChange={(v) => setSelectedAppId(v === "all" ? undefined : v)}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="All apps" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All apps</SelectItem>
+                {(apps as any[]).map((a: any) => (
+                  <SelectItem key={a.id} value={a.id.toString()}>{a.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : apps && (apps as any[]).length === 1 ? (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/50 text-sm font-medium text-muted-foreground border border-border/50">
+              {(apps as any[])[0].name}
+            </div>
+          ) : null}
+          <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="w-4 h-4" /> Generate Keys
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Generate License Keys</DialogTitle>
@@ -135,7 +155,8 @@ export default function LicensesPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       <Card className="border-border bg-card/50">

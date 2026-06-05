@@ -19,14 +19,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Search, ShieldAlert, ShieldCheck, RefreshCw, Plus, Trash2, RotateCw,
-  ChevronDown, Users, Pencil, Camera, Filter, LayoutGrid, LayoutList,
+  Search, ShieldAlert, ShieldCheck, RefreshCw, Plus, Trash2,
+  Users, Pencil, Camera, Filter, LayoutGrid, LayoutList,
   Clock, AlertTriangle,
 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type ManagedUser = {
-  id: number;
+  id: string;
   username: string;
   email: string;
   plan: string;
@@ -100,9 +99,13 @@ function EditUserDialog({ user, onSaved }: { user: ManagedUser; onSaved: () => v
 
   return (
     <>
-      <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setOpen(true)}>
-        <Pencil className="w-4 h-4 mr-2" /> Edit User
-      </DropdownMenuItem>
+      <button
+        onClick={() => setOpen(true)}
+        className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+        title="Edit User"
+      >
+        <Pencil className="w-4 h-4" />
+      </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -480,21 +483,26 @@ export default function UsersPage() {
                       <span>Created: <span className="text-foreground">{new Date(user.createdAt).toLocaleDateString()}</span></span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+                    <EditUserDialog user={user} onSaved={invalidate} />
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-xs gap-1">
-                          <RefreshCw className="w-3 h-3" /> Reset HWID
-                        </Button>
+                        <button
+                          className="p-1.5 rounded hover:bg-amber-500/10 transition-colors text-muted-foreground hover:text-amber-400"
+                          title="Reset HWID"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                        </button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Reset HWID?</AlertDialogTitle>
-                          <AlertDialogDescription>This allows the user to login from a new device.</AlertDialogDescription>
+                          <AlertDialogDescription>This allows {user.username} to login from a new device.</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => resetHwidMutation.mutate({ id: user.id }, { onSuccess: invalidate })}>Reset HWID</AlertDialogAction>
+                          <AlertDialogAction onClick={() => resetHwidMutation.mutate({ id: user.id as any }, { onSuccess: invalidate })}>Reset HWID</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -502,9 +510,12 @@ export default function UsersPage() {
                     {user.status === "active" ? (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="text-xs gap-1 text-destructive border-destructive/20 hover:bg-destructive/10">
-                            <ShieldAlert className="w-3 h-3" /> Ban
-                          </Button>
+                          <button
+                            className="p-1.5 rounded hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
+                            title="Ban User"
+                          >
+                            <ShieldAlert className="w-4 h-4" />
+                          </button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
@@ -513,36 +524,45 @@ export default function UsersPage() {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => banMutation.mutate({ id: user.id }, { onSuccess: invalidate })} className="bg-destructive hover:bg-destructive/90">Ban User</AlertDialogAction>
+                            <AlertDialogAction onClick={() => banMutation.mutate({ id: user.id as any }, { onSuccess: invalidate })} className="bg-destructive hover:bg-destructive/90">Ban User</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
                     ) : (
-                      <Button variant="outline" size="sm" className="text-xs gap-1 text-green-500 border-green-500/20 hover:bg-green-500/10" onClick={() => unbanMutation.mutate({ id: user.id }, { onSuccess: invalidate })}>
-                        <ShieldCheck className="w-3 h-3" /> Unban
-                      </Button>
+                      <button
+                        className="p-1.5 rounded hover:bg-green-500/10 transition-colors text-muted-foreground hover:text-green-500"
+                        title="Unban User"
+                        onClick={() => unbanMutation.mutate({ id: user.id as any }, { onSuccess: invalidate })}
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                      </button>
                     )}
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="w-8 h-8">
-                          <ChevronDown className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <EditUserDialog user={user} onSaved={invalidate} />
-                        <DropdownMenuItem onClick={() => rotateMutation.mutate({ id: user.id }, { onSuccess: invalidate })}>
-                          <RotateCw className="w-4 h-4 mr-2" /> Rotate Token
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => deleteMutation.mutate({ id: user.id }, { onSuccess: () => { invalidate(); toast({ variant: "success", title: "User deleted" }); } })}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="p-1.5 rounded hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
+                          title="Delete User"
                         >
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete User
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete {user.username}?</AlertDialogTitle>
+                          <AlertDialogDescription>This will permanently delete the user and all their sessions. This cannot be undone.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteMutation.mutate({ id: user.id as any }, { onSuccess: () => { invalidate(); toast({ variant: "success", title: "User deleted" }); } })}
+                            className="bg-destructive hover:bg-destructive/90"
+                          >
+                            Delete User
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </CardContent>
